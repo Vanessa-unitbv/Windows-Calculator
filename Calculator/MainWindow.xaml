@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:Calculator"
         mc:Ignorable="d"
         Title="Calculator" Height="503" Width="300"
-        Icon="C:\Users\palat\OneDrive\Documente\Desktop\A2S2\MVP\Calculator\icon.png">
+        Icon="C:\Users\palat\OneDrive\Documente\Desktop\A2S2\MVP\Calculator-Tema1\Calculator\icon.png">
     <Grid>
     <Grid.RowDefinitions>
         <RowDefinition Height="Auto"/>

@@ -197,20 +197,20 @@ namespace Calculator
                 case Key.OemComma:
                     HandleDecimalInput();
                     break;
-                case Key.Add:
-                    HandleOperation("+");
+                case Key.OemPlus:
+                        HandleOperation("+");
                     break;
-                case Key.Subtract:
+                case Key.OemMinus:
                     HandleOperation("-");
                     break;
-                case Key.Multiply:
+                case Key.X:
                     HandleOperation("x");
                     break;
-                case Key.Divide:
+                case Key.OemQuestion:
                     HandleOperation("÷");
                     break;
                 case Key.Enter:
-                    PerformCalculation();
+                    HandleOperation("=");
                     break;
                 case Key.Escape:
                     ClearAll();
