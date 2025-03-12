@@ -11,6 +11,7 @@ namespace Calculator
     {
         private CalculatorManager _calculatorManager;
         private CalculatorMemoryManager _memoryManager;
+        private ClipboardManager _clipboardManager;
 
         public MainWindow()
         {
@@ -29,8 +30,14 @@ namespace Calculator
             // Inițializează și configurează managerul calculatorului
             _calculatorManager = new CalculatorManager(this, _memoryManager);
 
+            // Inițializează managerul de clipboard
+            _clipboardManager = new ClipboardManager(ResultTextBox, _calculatorManager);
+
             // Atașează evenimentul pentru tastele de la tastatură
             KeyDown += MainWindow_KeyDown;
+
+            // Atașează evenimentele pentru meniu
+            AttachMenuEvents();
         }
 
         private void MainWindow_KeyDown(object sender, KeyEventArgs e)
@@ -58,5 +65,106 @@ namespace Calculator
                 _calculatorManager.SetDisplayValue(selectedValue);
             }
         }
+
+        /// <summary>
+        /// Atașează evenimentele pentru elementele de meniu
+        /// </summary>
+        private void AttachMenuEvents()
+        {
+            // Atașează evenimentele pentru Cut, Copy, Paste
+            if (FindMenuItem("Cut") is MenuItem cutMenuItem)
+            {
+                cutMenuItem.Click += CutMenuItem_Click;
+            }
+
+            if (FindMenuItem("Copy") is MenuItem copyMenuItem)
+            {
+                copyMenuItem.Click += CopyMenuItem_Click;
+            }
+
+            if (FindMenuItem("Paste") is MenuItem pasteMenuItem)
+            {
+                pasteMenuItem.Click += PasteMenuItem_Click;
+            }
+
+            if (FindMenuItem("Digit Grouping") is MenuItem digitGroupingMenuItem)
+            {
+                digitGroupingMenuItem.Click += DigitGroupingMenuItem_Click;
+            }
+        }
+
+        /// <summary>
+        /// Găsește un element de meniu după textul său
+        /// </summary>
+        /// <param name="header">Textul elementului de meniu</param>
+        /// <returns>Elementul de meniu găsit sau null</returns>
+        private MenuItem FindMenuItem(string header)
+        {
+            foreach (var item in MainMenu.Items)
+            {
+                if (item is MenuItem menuItem)
+                {
+                    foreach (var subItem in menuItem.Items)
+                    {
+                        if (subItem is MenuItem subMenuItem && subMenuItem.Header.ToString() == header)
+                        {
+                            return subMenuItem;
+                        }
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Eveniment pentru opțiunea Cut din meniu
+        /// </summary>
+        private void CutMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            _clipboardManager.Cut();
+        }
+
+        /// <summary>
+        /// Eveniment pentru opțiunea Copy din meniu
+        /// </summary>
+        private void CopyMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            _clipboardManager.Copy();
+        }
+
+        /// <summary>
+        /// Eveniment pentru opțiunea Paste din meniu
+        /// </summary>
+        private void PasteMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            _clipboardManager.Paste();
+        }
+
+        /// <summary>
+        /// Eveniment pentru opțiunea Digit Grouping din meniu
+        /// </summary>
+        private void DigitGroupingMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is MenuItem menuItem)
+            {
+                // Inversează starea IsChecked
+                menuItem.IsChecked = !menuItem.IsChecked;
+
+                // Setează gruparea de digiti în calculator
+                _calculatorManager.SetDigitGrouping(menuItem.IsChecked);
+            }
+        }
+        // Adaugă această metodă în clasa MainWindow
+
+        /// <summary>
+        /// Gestionează evenimentul de click pe meniul About
+        /// </summary>
+        private void AboutMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            // Folosește CalculatorManager pentru a afișa informații despre aplicație
+            _calculatorManager.ShowAboutInfo();
+        }
     }
+
 }

@@ -24,6 +24,9 @@ namespace Calculator
         // Flag pentru a ști dacă rezultatul este afișat
         private bool _isResultDisplayed = false;
 
+        // Flag pentru a controla gruparea digitală
+        private bool _useDigitGrouping = false;
+
         /// <summary>
         /// Constructor pentru managerul calculatorului
         /// </summary>
@@ -405,7 +408,16 @@ namespace Calculator
         /// <param name="value">Valoarea care trebuie afișată</param>
         private void UpdateDisplay(double value)
         {
-            ResultTextBox.Text = value.ToString("G15").Replace('.', ',');
+            if (_useDigitGrouping)
+            {
+                // Folosim formatarea cu grupare de digiti
+                ResultTextBox.Text = value.ToString("N", System.Globalization.CultureInfo.CurrentCulture).Replace('.', ',');
+            }
+            else
+            {
+                // Formatare standard fără grupare
+                ResultTextBox.Text = value.ToString("G15").Replace('.', ',');
+            }
         }
 
         /// <summary>
@@ -417,6 +429,60 @@ namespace Calculator
             UpdateDisplay(value);
             _isNewNumber = true;
             _isResultDisplayed = true;
+        }
+
+        /// <summary>
+        /// Resetează calculatorul la starea inițială
+        /// </summary>
+        public void Reset()
+        {
+            ResultTextBox.Text = "0";
+            _engine.Reset();
+            _isNewNumber = true;
+            _isResultDisplayed = false;
+        }
+
+        /// <summary>
+        /// Setează valoarea calculatorului din string
+        /// </summary>
+        /// <param name="value">Valoarea ca string</param>
+        /// <returns>True dacă setarea a reușit, False în caz contrar</returns>
+        public bool SetValueFromString(string value)
+        {
+            // Înlocuim punctul cu virgulă pentru formatarea corectă
+            string normalizedValue = value.Replace('.', ',');
+
+            // Încercăm să parsăm valoarea
+            if (double.TryParse(normalizedValue, out double numericValue))
+            {
+                // Setăm valoarea în TextBox
+                ResultTextBox.Text = normalizedValue;
+
+                // Setăm valoarea în motor
+                _engine.SetValue(numericValue);
+
+                _isNewNumber = true;
+                _isResultDisplayed = true;
+
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Setează gruparea digitală pentru afișare
+        /// </summary>
+        /// <param name="useGrouping">True pentru a activa gruparea, False pentru a o dezactiva</param>
+        public void SetDigitGrouping(bool useGrouping)
+        {
+            _useDigitGrouping = useGrouping;
+
+            // Reafișează valoarea curentă cu noua formatare
+            if (!_isNewNumber)
+            {
+                UpdateDisplay(_engine.Result);
+            }
         }
 
         #endregion
@@ -557,6 +623,23 @@ namespace Calculator
         private void MemorySubtract_Click(object sender, RoutedEventArgs e)
         {
             _memoryManager.MemorySubtract(ParseCurrentValue());
+        }
+
+        #endregion
+
+        #region Menu Operations
+
+        /// <summary>
+        /// Afișează informații despre aplicație
+        /// </summary>
+        public void ShowAboutInfo()
+        {
+            MessageBox.Show(
+                "Dezvoltator: Palatka Vanessa\nGrupa: 10LF332",
+                "Despre Calculator",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information
+            );
         }
 
         #endregion
