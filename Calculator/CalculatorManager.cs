@@ -13,6 +13,7 @@ namespace Calculator
     {
         private readonly MainWindow _mainWindow;
         private readonly CalculatorEngine _engine;
+        private readonly CalculatorMemoryManager _memoryManager;
 
         // Referință la TextBox-ul pentru afișare
         private TextBox ResultTextBox => _mainWindow.ResultTextBox;
@@ -27,10 +28,12 @@ namespace Calculator
         /// Constructor pentru managerul calculatorului
         /// </summary>
         /// <param name="mainWindow">Referință la fereastra principală</param>
-        public CalculatorManager(MainWindow mainWindow)
+        /// <param name="memoryManager">Referință la managerul de memorie</param>
+        public CalculatorManager(MainWindow mainWindow, CalculatorMemoryManager memoryManager)
         {
             _mainWindow = mainWindow;
             _engine = new CalculatorEngine();
+            _memoryManager = memoryManager;
 
             // Atașează handler-uri de evenimente pentru butoane
             AttachEventHandlers();
@@ -130,6 +133,9 @@ namespace Calculator
                         case "M-":
                             button.Click += MemorySubtract_Click;
                             break;
+                        case "M>":
+                            // Acest buton este gestionat direct în MainWindow.xaml.cs
+                            break;
                     }
                 }
                 else
@@ -198,7 +204,7 @@ namespace Calculator
                     HandleDecimalInput();
                     break;
                 case Key.OemPlus:
-                        HandleOperation("+");
+                    HandleOperation("+");
                     break;
                 case Key.OemMinus:
                     HandleOperation("-");
@@ -402,6 +408,17 @@ namespace Calculator
             ResultTextBox.Text = value.ToString("G15").Replace('.', ',');
         }
 
+        /// <summary>
+        /// Setează o valoare în afișaj (folosită pentru valorile selectate din memorie)
+        /// </summary>
+        /// <param name="value">Valoarea de afișat</param>
+        public void SetDisplayValue(double value)
+        {
+            UpdateDisplay(value);
+            _isNewNumber = true;
+            _isResultDisplayed = true;
+        }
+
         #endregion
 
         #region Event Handlers
@@ -506,35 +523,40 @@ namespace Calculator
             HandlePlusMinus();
         }
 
+        #endregion
+
+        #region Memory Event Handlers
+
         // Eveniment pentru butonul MC (Memory Clear)
         private void MemoryClear_Click(object sender, RoutedEventArgs e)
         {
-            _engine.MemoryClear();
+            _memoryManager.MemoryClear();
         }
 
         // Eveniment pentru butonul MR (Memory Recall)
         private void MemoryRecall_Click(object sender, RoutedEventArgs e)
         {
-            UpdateDisplay(_engine.MemoryRecall());
+            double memoryValue = _memoryManager.MemoryRecall();
+            UpdateDisplay(memoryValue);
             _isNewNumber = true;
         }
 
         // Eveniment pentru butonul MS (Memory Store)
         private void MemoryStore_Click(object sender, RoutedEventArgs e)
         {
-            _engine.MemoryStore(ParseCurrentValue());
+            _memoryManager.MemoryStore(ParseCurrentValue());
         }
 
         // Eveniment pentru butonul M+ (Memory Add)
         private void MemoryAdd_Click(object sender, RoutedEventArgs e)
         {
-            _engine.MemoryAdd(ParseCurrentValue());
+            _memoryManager.MemoryAdd(ParseCurrentValue());
         }
 
         // Eveniment pentru butonul M- (Memory Subtract)
         private void MemorySubtract_Click(object sender, RoutedEventArgs e)
         {
-            _engine.MemorySubtract(ParseCurrentValue());
+            _memoryManager.MemorySubtract(ParseCurrentValue());
         }
 
         #endregion

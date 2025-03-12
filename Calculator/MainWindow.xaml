@@ -8,83 +8,102 @@
         Title="Calculator" Height="503" Width="300"
         Icon="C:\Users\palat\OneDrive\Documente\Desktop\A2S2\MVP\Calculator-Tema1\Calculator\icon.png">
     <Grid>
-    <Grid.RowDefinitions>
-        <RowDefinition Height="Auto"/>
-        <RowDefinition Height="*"/>
-    </Grid.RowDefinitions>
-
-    <TextBox Name="ResultTextBox" Grid.Row="0" HorizontalAlignment="Center" Margin="0,10,0,10" TextWrapping="Wrap" VerticalAlignment="Top" Width="280" Height="49" TextAlignment="Right" FontSize="34" />
-
-    <Grid Grid.Row="1">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <Grid Grid.Row="0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
+        <!-- TextBox pentru afișarea rezultatului -->
+        <TextBox Name="ResultTextBox" Grid.Row="0" HorizontalAlignment="Center" Margin="0,10,0,10" 
+                 TextWrapping="Wrap" VerticalAlignment="Top" Width="280" Height="49" 
+                 TextAlignment="Right" FontSize="34" />
 
-            <Button Grid.Column="0" Content="M" />
-            <Button Grid.Column="1" Content="MR" />
-            <Button Grid.Column="2" Content="MS"/>
-            <Button Grid.Column="3" Content="M+" />
-            <Button Grid.Column="4" Content="M-" />
-        </Grid>
+        <!-- ListBox pentru afișarea stivei de memorie -->
+        <ListBox Name="MemoryListBox" Grid.Row="0" HorizontalAlignment="Center" 
+                 Margin="0,70,0,0" Width="280" Height="120" Visibility="Collapsed"
+                 MouseDoubleClick="MemoryListBox_MouseDoubleClick"
+                 BorderThickness="1" BorderBrush="#AAAAAA">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal" Margin="2">
+                        <TextBlock Text="{Binding Value}" FontWeight="Bold" Margin="0,0,10,0"/>
+                        <TextBlock Text="{Binding Timestamp, StringFormat=HH:mm:ss}" Foreground="Gray" FontSize="11"/>
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+            <ListBox.ToolTip>
+                Dublu-click: utilizează valoarea în calcule
+                Selectare + MC: șterge valoarea selectată
+                Selectare + M+/M-: modifică valoarea selectată
+            </ListBox.ToolTip>
+        </ListBox>
 
         <Grid Grid.Row="1">
             <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="*"/>
-
             </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
 
-            <Button Grid.Row="0" Grid.Column="0" Content="%" />
-            <Button Grid.Row="0" Grid.Column="1" Content="CE" />
-            <Button Grid.Row="0" Grid.Column="2" Content="C" />
-            <Button Grid.Row="0" Grid.Column="3" Content="⌫" />
+            <!-- Butoane pentru operații de memorie -->
+            <Grid Grid.Row="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Button Grid.Column="0" Content="MC" />
+                <Button Grid.Column="1" Content="MR" />
+                <Button Grid.Column="2" Content="MS"/>
+                <Button Grid.Column="3" Content="M+" />
+                <Button Grid.Column="4" Content="M-" />
+            </Grid>
 
-            <Button Grid.Row="1" Grid.Column="0" Content="1/x"/>
-            <Button Grid.Row="1" Grid.Column="1" Content="x²" />
-            <Button Grid.Row="1" Grid.Column="2" Content="²√x" />
-            <Button Grid.Row="1" Grid.Column="3" Content="÷" />
+            <!-- Restul butoanelor calculatorului -->
+            <Grid Grid.Row="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Button Grid.Row="0" Grid.Column="0" Content="%" />
+                <Button Grid.Row="0" Grid.Column="1" Content="CE" />
+                <Button Grid.Row="0" Grid.Column="2" Content="C" />
+                <Button Grid.Row="0" Grid.Column="3" Content="⌫" />
+                <Button Grid.Row="1" Grid.Column="0" Content="1/x"/>
+                <Button Grid.Row="1" Grid.Column="1" Content="x²" />
+                <Button Grid.Row="1" Grid.Column="2" Content="²√x" />
+                <Button Grid.Row="1" Grid.Column="3" Content="÷" />
+                <Button Grid.Row="2" Grid.Column="0" Content="7" />
+                <Button Grid.Row="2" Grid.Column="1" Content="8" />
+                <Button Grid.Row="2" Grid.Column="2" Content="9" />
+                <Button Grid.Row="2" Grid.Column="3" Content="x" />
+                <Button Grid.Row="3" Grid.Column="0" Content="4" />
+                <Button Grid.Row="3" Grid.Column="1" Content="5" />
+                <Button Grid.Row="3" Grid.Column="2" Content="6" />
+                <Button Grid.Row="3" Grid.Column="3" Content="-" />
+                <Button Grid.Row="4" Grid.Column="0" Content="1"/>
+                <Button Grid.Row="4" Grid.Column="1" Content="2" />
+                <Button Grid.Row="4" Grid.Column="2" Content="3" />
+                <Button Grid.Row="4" Grid.Column="3" Content="+" />
+                <Button Grid.Row="5" Grid.Column="0" Content="+/-" />
+                <Button Grid.Row="5" Grid.Column="1" Content="0" />
+                <Button Grid.Row="5" Grid.Column="2" Content="," />
+                <Button Grid.Row="5" Grid.Column="3" Content="=" />
 
-            <Button Grid.Row="2" Grid.Column="0" Content="7" />
-            <Button Grid.Row="2" Grid.Column="1" Content="8" />
-            <Button Grid.Row="2" Grid.Column="2" Content="9" />
-            <Button Grid.Row="2" Grid.Column="3" Content="x" />
-
-            <Button Grid.Row="3" Grid.Column="0" Content="4" />
-            <Button Grid.Row="3" Grid.Column="1" Content="5" />
-            <Button Grid.Row="3" Grid.Column="2" Content="6" />
-            <Button Grid.Row="3" Grid.Column="3" Content="-" />
-
-            <Button Grid.Row="4" Grid.Column="0" Content="1"/>
-            <Button Grid.Row="4" Grid.Column="1" Content="2" />
-            <Button Grid.Row="4" Grid.Column="2" Content="3" />
-            <Button Grid.Row="4" Grid.Column="3" Content="+" />
-
-            <Button Grid.Row="5" Grid.Column="0" Content="+/-" />
-            <Button Grid.Row="5" Grid.Column="1" Content="0" />
-            <Button Grid.Row="5" Grid.Column="2" Content="," />
-            <Button Grid.Row="5" Grid.Column="3" Content="=" />
-
+                <!-- Buton pentru afișarea stivei de memorie (M>) -->
+                <Button Grid.Row="0" Grid.Column="0" Content="M>" Margin="0,0,53,0" Grid.ColumnSpan="2" Click="MemoryShow_Click" />
+            </Grid>
         </Grid>
-    </Grid>
     </Grid>
 </Window>
