@@ -90,7 +90,14 @@ namespace Calculator
                     Result /= currentValue;
                     break;
                 case "%":
-                    Result = Result * currentValue / 100;
+                    if(Result== 0)
+                    {
+                        Result = currentValue / 100;
+                    }
+                    else
+                    {
+                        Result = Result * currentValue / 100;
+                    }
                     break;
             }
 

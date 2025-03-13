@@ -194,8 +194,8 @@ namespace Calculator
                 case Key.D4:
                     HandleDigitInput("4");
                     break;
-                case Key.NumPad5:
-                case Key.D5:
+                case Key.NumPad5 when Keyboard.Modifiers != ModifierKeys.Shift:
+                case Key.D5 when Keyboard.Modifiers != ModifierKeys.Shift:
                     HandleDigitInput("5");
                     break;
                 case Key.NumPad6:
@@ -230,6 +230,10 @@ namespace Calculator
                     break;
                 case Key.OemQuestion:
                     HandleOperation("÷");
+                    break;
+                case Key.NumPad5 when Keyboard.Modifiers == ModifierKeys.Shift:
+                case Key.D5 when Keyboard.Modifiers == ModifierKeys.Shift:
+                    HandleOperation("%");
                     break;
                 case Key.Enter:
                     HandleOperation("=");
