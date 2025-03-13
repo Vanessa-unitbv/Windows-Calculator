@@ -38,11 +38,32 @@ namespace Calculator
 
             // Atașează evenimentele pentru meniu
             AttachMenuEvents();
+
+            // Încarcă setările salvate
+            LoadSettings();
         }
 
         private void MainWindow_KeyDown(object sender, KeyEventArgs e)
         {
             _calculatorManager.HandleKeyPress(e);
+        }
+
+        /// <summary>
+        /// Încarcă setările salvate
+        /// </summary>
+        private void LoadSettings()
+        {
+            // Obține setarea pentru digit grouping din SettingsManager
+            bool useDigitGrouping = SettingsManager.Instance.UseDigitGrouping;
+
+            // Găsește și actualizează starea checkbox-ului din meniu
+            if (FindMenuItem("Digit Grouping") is MenuItem digitGroupingMenuItem)
+            {
+                digitGroupingMenuItem.IsChecked = useDigitGrouping;
+            }
+
+            // Setează gruparea de digiti în calculator
+            _calculatorManager.SetDigitGrouping(useDigitGrouping);
         }
 
         /// <summary>
@@ -89,6 +110,10 @@ namespace Calculator
 
             if (FindMenuItem("Digit Grouping") is MenuItem digitGroupingMenuItem)
             {
+                // Asigură-te că este checkable
+                digitGroupingMenuItem.IsCheckable = true;
+
+                // Adaugă handler pentru eveniment
                 digitGroupingMenuItem.Click += DigitGroupingMenuItem_Click;
             }
         }
@@ -148,14 +173,19 @@ namespace Calculator
         {
             if (sender is MenuItem menuItem)
             {
-                // Inversează starea IsChecked
-                menuItem.IsChecked = !menuItem.IsChecked;
+                // Luam direct starea actuală a checkbox-ului
+                bool isChecked = menuItem.IsChecked;
+
+                // Debug: afișăm starea
+                MessageBox.Show($"Digit grouping: {isChecked}");
 
                 // Setează gruparea de digiti în calculator
-                _calculatorManager.SetDigitGrouping(menuItem.IsChecked);
+                _calculatorManager.SetDigitGrouping(isChecked);
+
+                // Salvează setarea în SettingsManager
+                SettingsManager.Instance.UseDigitGrouping = isChecked;
             }
         }
-        // Adaugă această metodă în clasa MainWindow
 
         /// <summary>
         /// Gestionează evenimentul de click pe meniul About
@@ -166,5 +196,4 @@ namespace Calculator
             _calculatorManager.ShowAboutInfo();
         }
     }
-
 }

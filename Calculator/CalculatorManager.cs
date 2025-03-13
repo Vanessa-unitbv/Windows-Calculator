@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Globalization;
 
 namespace Calculator
 {
@@ -27,6 +28,15 @@ namespace Calculator
         // Flag pentru a controla gruparea digitală
         private bool _useDigitGrouping = false;
 
+        // Stocăm valoarea actuală ca string pentru a facilita formatarea
+        private string _currentNumberString = "0";
+
+        // Stocăm dacă numărul conține zecimale
+        private bool _hasDecimal = false;
+
+        // Cultura curentă a sistemului
+        private readonly CultureInfo _currentCulture;
+
         /// <summary>
         /// Constructor pentru managerul calculatorului
         /// </summary>
@@ -37,6 +47,9 @@ namespace Calculator
             _mainWindow = mainWindow;
             _engine = new CalculatorEngine();
             _memoryManager = memoryManager;
+
+            // Obține cultura curentă a sistemului
+            _currentCulture = CultureInfo.CurrentCulture;
 
             // Atașează handler-uri de evenimente pentru butoane
             AttachEventHandlers();
@@ -240,21 +253,27 @@ namespace Calculator
         /// <param name="digit">Cifra care trebuie adăugată</param>
         private void HandleDigitInput(string digit)
         {
-            if (_isNewNumber || ResultTextBox.Text == "0")
+            if (_isNewNumber || _currentNumberString == "0")
             {
-                ResultTextBox.Text = digit;
+                _currentNumberString = digit;
                 _isNewNumber = false;
+                _hasDecimal = false;
             }
             else if (_isResultDisplayed)
             {
-                ResultTextBox.Text = digit;
+                _currentNumberString = digit;
                 _isResultDisplayed = false;
                 _isNewNumber = false;
+                _hasDecimal = false;
             }
             else
             {
-                ResultTextBox.Text += digit;
+                // Adăugăm cifra la numărul curent
+                _currentNumberString += digit;
             }
+
+            // Afișăm numărul cu sau fără grupare
+            UpdateDisplay();
         }
 
         /// <summary>
@@ -262,16 +281,23 @@ namespace Calculator
         /// </summary>
         private void HandleDecimalInput()
         {
+            string decimalSeparator = _currentCulture.NumberFormat.NumberDecimalSeparator;
+
             if (_isNewNumber || _isResultDisplayed)
             {
-                ResultTextBox.Text = "0,";
+                _currentNumberString = "0" + decimalSeparator;
                 _isNewNumber = false;
                 _isResultDisplayed = false;
+                _hasDecimal = true;
             }
-            else if (!ResultTextBox.Text.Contains(","))
+            else if (!_hasDecimal)
             {
-                ResultTextBox.Text += ",";
+                _currentNumberString += decimalSeparator;
+                _hasDecimal = true;
             }
+
+            // Afișăm numărul cu separatorul zecimal
+            UpdateDisplay();
         }
 
         /// <summary>
@@ -287,7 +313,19 @@ namespace Calculator
             {
                 // Dacă da, finalizează acea operație înainte de a începe una nouă
                 _engine.Calculate(currentValue);
-                UpdateDisplay(_engine.Result);
+
+                // Actualizăm string-ul curent
+                _currentNumberString = _engine.Result.ToString(CultureInfo.InvariantCulture);
+                _hasDecimal = _currentNumberString.Contains(".");
+
+                // Înlocuim punctul cu separatorul zecimal specific culturii
+                if (_hasDecimal)
+                {
+                    _currentNumberString = _currentNumberString.Replace(".", _currentCulture.NumberFormat.NumberDecimalSeparator);
+                }
+
+                // Afișăm rezultatul
+                UpdateDisplay();
             }
             else
             {
@@ -309,16 +347,25 @@ namespace Calculator
             if (_isResultDisplayed || _isNewNumber)
                 return;
 
-            string text = ResultTextBox.Text;
-            if (text.Length > 1)
+            if (_currentNumberString.Length > 1)
             {
-                ResultTextBox.Text = text.Substring(0, text.Length - 1);
+                // Verificăm dacă am șters separatorul zecimal
+                if (_currentNumberString.EndsWith(_currentCulture.NumberFormat.NumberDecimalSeparator))
+                {
+                    _hasDecimal = false;
+                }
+
+                _currentNumberString = _currentNumberString.Substring(0, _currentNumberString.Length - 1);
             }
             else
             {
-                ResultTextBox.Text = "0";
+                _currentNumberString = "0";
                 _isNewNumber = true;
+                _hasDecimal = false;
             }
+
+            // Actualizăm afișajul
+            UpdateDisplay();
         }
 
         /// <summary>
@@ -326,18 +373,19 @@ namespace Calculator
         /// </summary>
         private void HandlePlusMinus()
         {
-            string text = ResultTextBox.Text;
-
-            if (text != "0")
+            if (_currentNumberString != "0")
             {
-                if (text.StartsWith("-"))
+                if (_currentNumberString.StartsWith("-"))
                 {
-                    ResultTextBox.Text = text.Substring(1);
+                    _currentNumberString = _currentNumberString.Substring(1);
                 }
                 else
                 {
-                    ResultTextBox.Text = "-" + text;
+                    _currentNumberString = "-" + _currentNumberString;
                 }
+
+                // Actualizăm afișajul
+                UpdateDisplay();
             }
         }
 
@@ -346,10 +394,14 @@ namespace Calculator
         /// </summary>
         private void ClearAll()
         {
-            ResultTextBox.Text = "0";
+            _currentNumberString = "0";
+            _hasDecimal = false;
             _engine.Reset();
             _isNewNumber = true;
             _isResultDisplayed = false;
+
+            // Actualizăm afișajul
+            UpdateDisplay();
         }
 
         /// <summary>
@@ -357,8 +409,12 @@ namespace Calculator
         /// </summary>
         private void ClearEntry()
         {
-            ResultTextBox.Text = "0";
+            _currentNumberString = "0";
+            _hasDecimal = false;
             _isNewNumber = true;
+
+            // Actualizăm afișajul
+            UpdateDisplay();
         }
 
         /// <summary>
@@ -370,7 +426,20 @@ namespace Calculator
             try
             {
                 _engine.Calculate(currentValue);
-                UpdateDisplay(_engine.Result);
+
+                // Actualizăm string-ul curent
+                _currentNumberString = _engine.Result.ToString(CultureInfo.InvariantCulture);
+                _hasDecimal = _currentNumberString.Contains(".");
+
+                // Înlocuim punctul cu separatorul zecimal specific culturii
+                if (_hasDecimal)
+                {
+                    _currentNumberString = _currentNumberString.Replace(".", _currentCulture.NumberFormat.NumberDecimalSeparator);
+                }
+
+                // Afișăm rezultatul
+                UpdateDisplay();
+
                 _isNewNumber = true;
                 _isResultDisplayed = true;
             }
@@ -390,10 +459,11 @@ namespace Calculator
         /// <returns>Valoarea numerică din TextBox</returns>
         private double ParseCurrentValue()
         {
-            if (double.TryParse(ResultTextBox.Text.Replace(',', '.'),
-                               System.Globalization.NumberStyles.Any,
-                               System.Globalization.CultureInfo.InvariantCulture,
-                               out double result))
+            // Convertim valoarea curentă la număr
+            if (double.TryParse(_currentNumberString,
+                              NumberStyles.Any,
+                              _currentCulture,
+                              out double result))
             {
                 return result;
             }
@@ -403,21 +473,90 @@ namespace Calculator
         }
 
         /// <summary>
-        /// Actualizează afișajul cu valoarea specificată
+        /// Actualizează afișajul cu valoarea curentă
         /// </summary>
-        /// <param name="value">Valoarea care trebuie afișată</param>
-        private void UpdateDisplay(double value)
+        /// <summary>
+        /// Actualizează afișajul cu valoarea curentă
+        /// </summary>
+        private void UpdateDisplay()
         {
+            // Verificăm dacă trebuie să aplicăm gruparea
             if (_useDigitGrouping)
             {
-                // Folosim formatarea cu grupare de digiti
-                ResultTextBox.Text = value.ToString("N", System.Globalization.CultureInfo.CurrentCulture).Replace('.', ',');
+                // Aplicăm gruparea pentru orice număr, chiar și cu zecimale
+                string integerPart = _currentNumberString;
+                string decimalPart = "";
+
+                // Separăm partea întreagă de partea zecimală
+                if (_currentNumberString.Contains(_currentCulture.NumberFormat.NumberDecimalSeparator))
+                {
+                    string[] parts = _currentNumberString.Split(new[] { _currentCulture.NumberFormat.NumberDecimalSeparator }, StringSplitOptions.None);
+                    integerPart = parts[0];
+                    decimalPart = parts.Length > 1 ? _currentCulture.NumberFormat.NumberDecimalSeparator + parts[1] : "";
+                }
+
+                // Verificăm dacă avem un număr negativ
+                bool isNegative = integerPart.StartsWith("-");
+                if (isNegative)
+                {
+                    integerPart = integerPart.Substring(1);
+                }
+
+                // Aplicăm gruparea doar pentru partea întreagă
+                string formattedInteger = FormatNumberWithGrouping(integerPart);
+
+                // Adăugăm semnul negativ dacă e cazul
+                if (isNegative)
+                {
+                    formattedInteger = "-" + formattedInteger;
+                }
+
+                // Setăm textul cu grupare pentru partea întreagă și păstrăm partea zecimală
+                ResultTextBox.Text = formattedInteger + decimalPart;
             }
             else
             {
-                // Formatare standard fără grupare
-                ResultTextBox.Text = value.ToString("G15").Replace('.', ',');
+                // Afișăm numărul fără grupare
+                ResultTextBox.Text = _currentNumberString;
             }
+        }
+
+
+        /// <summary>
+        /// Formatează un număr întreg cu separatoarele de grupare
+        /// </summary>
+        private string FormatNumberWithGrouping(string number)
+        {
+            // Eliminăm eventualele semne negative pentru formatare
+            bool isNegative = number.StartsWith("-");
+            if (isNegative)
+            {
+                number = number.Substring(1);
+            }
+
+            // Dacă numărul e prea mic, nu aplicăm gruparea
+            if (number.Length <= 3)
+            {
+                return isNegative ? "-" + number : number;
+            }
+
+            // Aplicăm gruparea
+            string separator = _currentCulture.NumberFormat.NumberGroupSeparator;
+            string result = "";
+
+            int count = 0;
+            for (int i = number.Length - 1; i >= 0; i--)
+            {
+                result = number[i] + result;
+                count++;
+
+                if (count % 3 == 0 && i > 0)
+                {
+                    result = separator + result;
+                }
+            }
+
+            return isNegative ? "-" + result : result;
         }
 
         /// <summary>
@@ -426,7 +565,19 @@ namespace Calculator
         /// <param name="value">Valoarea de afișat</param>
         public void SetDisplayValue(double value)
         {
-            UpdateDisplay(value);
+            // Actualizăm string-ul curent
+            _currentNumberString = value.ToString(CultureInfo.InvariantCulture);
+            _hasDecimal = _currentNumberString.Contains(".");
+
+            // Înlocuim punctul cu separatorul zecimal specific culturii
+            if (_hasDecimal)
+            {
+                _currentNumberString = _currentNumberString.Replace(".", _currentCulture.NumberFormat.NumberDecimalSeparator);
+            }
+
+            // Afișăm valoarea
+            UpdateDisplay();
+
             _isNewNumber = true;
             _isResultDisplayed = true;
         }
@@ -436,10 +587,14 @@ namespace Calculator
         /// </summary>
         public void Reset()
         {
-            ResultTextBox.Text = "0";
+            _currentNumberString = "0";
+            _hasDecimal = false;
             _engine.Reset();
             _isNewNumber = true;
             _isResultDisplayed = false;
+
+            // Actualizăm afișajul
+            UpdateDisplay();
         }
 
         /// <summary>
@@ -449,14 +604,21 @@ namespace Calculator
         /// <returns>True dacă setarea a reușit, False în caz contrar</returns>
         public bool SetValueFromString(string value)
         {
-            // Înlocuim punctul cu virgulă pentru formatarea corectă
-            string normalizedValue = value.Replace('.', ',');
-
             // Încercăm să parsăm valoarea
-            if (double.TryParse(normalizedValue, out double numericValue))
+            if (double.TryParse(value, NumberStyles.Any, _currentCulture, out double numericValue))
             {
-                // Setăm valoarea în TextBox
-                ResultTextBox.Text = normalizedValue;
+                // Actualizăm string-ul curent
+                _currentNumberString = numericValue.ToString(CultureInfo.InvariantCulture);
+                _hasDecimal = _currentNumberString.Contains(".");
+
+                // Înlocuim punctul cu separatorul zecimal specific culturii
+                if (_hasDecimal)
+                {
+                    _currentNumberString = _currentNumberString.Replace(".", _currentCulture.NumberFormat.NumberDecimalSeparator);
+                }
+
+                // Afișăm valoarea
+                UpdateDisplay();
 
                 // Setăm valoarea în motor
                 _engine.SetValue(numericValue);
@@ -478,11 +640,8 @@ namespace Calculator
         {
             _useDigitGrouping = useGrouping;
 
-            // Reafișează valoarea curentă cu noua formatare
-            if (!_isNewNumber)
-            {
-                UpdateDisplay(_engine.Result);
-            }
+            // Actualizăm afișajul cu starea curentă
+            UpdateDisplay();
         }
 
         #endregion
@@ -542,7 +701,18 @@ namespace Calculator
             try
             {
                 double result = _engine.Square(value);
-                UpdateDisplay(result);
+                // Actualizăm string-ul curent
+                _currentNumberString = result.ToString(CultureInfo.InvariantCulture);
+                _hasDecimal = _currentNumberString.Contains(".");
+
+                // Înlocuim punctul cu separatorul zecimal specific culturii
+                if (_hasDecimal)
+                {
+                    _currentNumberString = _currentNumberString.Replace(".", _currentCulture.NumberFormat.NumberDecimalSeparator);
+                }
+
+                // Afișăm rezultatul
+                UpdateDisplay();
                 _isResultDisplayed = true;
             }
             catch (Exception ex)
@@ -558,7 +728,18 @@ namespace Calculator
             try
             {
                 double result = _engine.SquareRoot(value);
-                UpdateDisplay(result);
+                // Actualizăm string-ul curent
+                _currentNumberString = result.ToString(CultureInfo.InvariantCulture);
+                _hasDecimal = _currentNumberString.Contains(".");
+
+                // Înlocuim punctul cu separatorul zecimal specific culturii
+                if (_hasDecimal)
+                {
+                    _currentNumberString = _currentNumberString.Replace(".", _currentCulture.NumberFormat.NumberDecimalSeparator);
+                }
+
+                // Afișăm rezultatul
+                UpdateDisplay();
                 _isResultDisplayed = true;
             }
             catch (Exception ex)
@@ -574,7 +755,18 @@ namespace Calculator
             try
             {
                 double result = _engine.Reciprocal(value);
-                UpdateDisplay(result);
+                // Actualizăm string-ul curent
+                _currentNumberString = result.ToString(CultureInfo.InvariantCulture);
+                _hasDecimal = _currentNumberString.Contains(".");
+
+                // Înlocuim punctul cu separatorul zecimal specific culturii
+                if (_hasDecimal)
+                {
+                    _currentNumberString = _currentNumberString.Replace(".", _currentCulture.NumberFormat.NumberDecimalSeparator);
+                }
+
+                // Afișăm rezultatul
+                UpdateDisplay();
                 _isResultDisplayed = true;
             }
             catch (Exception ex)
@@ -603,8 +795,7 @@ namespace Calculator
         private void MemoryRecall_Click(object sender, RoutedEventArgs e)
         {
             double memoryValue = _memoryManager.MemoryRecall();
-            UpdateDisplay(memoryValue);
-            _isNewNumber = true;
+            SetDisplayValue(memoryValue);
         }
 
         // Eveniment pentru butonul MS (Memory Store)

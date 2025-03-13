@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Windows;
 using System.Windows.Controls;
+using System.Globalization;
 
 namespace Calculator
 {
@@ -19,6 +20,9 @@ namespace Calculator
         // Valoare privată pentru stocarea textului în clipboard
         private string _clipboardText = string.Empty;
 
+        // Cultura curentă a sistemului
+        private readonly CultureInfo _currentCulture;
+
         /// <summary>
         /// Constructor pentru managerul de clipboard
         /// </summary>
@@ -28,6 +32,7 @@ namespace Calculator
         {
             _resultTextBox = resultTextBox;
             _calculatorManager = calculatorManager;
+            _currentCulture = CultureInfo.CurrentCulture;
         }
 
         /// <summary>
@@ -148,13 +153,10 @@ namespace Calculator
         /// <returns>True dacă este număr valid, False în caz contrar</returns>
         private bool IsValidNumber(string text)
         {
-            // Înlocuim virgula cu punct pentru parsare
-            string normalizedText = text.Replace(',', '.');
-
-            // Încercăm să parsăm ca double
-            return double.TryParse(normalizedText,
-                                  System.Globalization.NumberStyles.Any,
-                                  System.Globalization.CultureInfo.InvariantCulture,
+            // Încercăm să parsăm direct utilizând cultura curentă
+            return double.TryParse(text,
+                                  NumberStyles.Any,
+                                  _currentCulture,
                                   out _);
         }
     }
