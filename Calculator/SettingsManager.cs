@@ -2,6 +2,8 @@
 using System.IO;
 using System.Xml.Serialization;
 using System.Globalization;
+using System.Reflection;
+using System.Windows;
 
 namespace Calculator
 {
@@ -40,24 +42,23 @@ namespace Calculator
         private SettingsManager()
         {
             // Obține directorul aplicației pentru a stoca setările
-            string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            string calculatorDir = Path.Combine(appDataPath, "Calculator");
+            string appDirectory = GetApplicationDirectory();
 
-            // Creează directorul dacă nu există
-            if (!Directory.Exists(calculatorDir))
-            {
-                try
-                {
-                    Directory.CreateDirectory(calculatorDir);
-                }
-                catch (Exception)
-                {
-                    // Tratează eroarea - eventual loghează sau notifică utilizatorul
-                }
-            }
+            // Calea către fișierul de setări în directorul aplicației
+            _settingsFilePath = Path.Combine(appDirectory, "settings.xml");
 
-            _settingsFilePath = Path.Combine(calculatorDir, "settings.xml");
+          
+
             LoadSettings();
+        }
+
+        /// <summary>
+        /// Obține directorul curent al aplicației
+        /// </summary>
+        private string GetApplicationDirectory()
+        {
+            // Obține directorul de execuție al aplicației
+            return AppDomain.CurrentDomain.BaseDirectory;
         }
 
         /// <summary>
@@ -74,11 +75,16 @@ namespace Calculator
                     {
                         _currentSettings = (CalculatorSettings)serializer.Deserialize(fs);
                     }
+
+                    
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
                     // În caz de eroare, creează setări implicite
                     _currentSettings = new CalculatorSettings();
+
+                    // Afișează eroarea pentru depanare (poți elimina această linie după testare)
+                    MessageBox.Show($"Eroare la încărcarea setărilor: {ex.Message}");
                 }
             }
             else
@@ -101,9 +107,10 @@ namespace Calculator
                     serializer.Serialize(fs, _currentSettings);
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // Tratează eroarea de salvare - eventual notifică utilizatorul
+                // Afișează eroarea pentru depanare (poți elimina această linie după testare)
+                MessageBox.Show($"Eroare la salvarea setărilor: {ex.Message}");
             }
         }
 
