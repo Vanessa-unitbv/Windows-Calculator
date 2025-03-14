@@ -194,8 +194,8 @@ namespace Calculator
                 case Key.D4:
                     HandleDigitInput("4");
                     break;
-                case Key.NumPad5 when Keyboard.Modifiers != ModifierKeys.Shift:
                 case Key.D5 when Keyboard.Modifiers != ModifierKeys.Shift:
+                case Key.NumPad5 when Keyboard.Modifiers != ModifierKeys.Shift:
                     HandleDigitInput("5");
                     break;
                 case Key.NumPad6:
@@ -231,9 +231,9 @@ namespace Calculator
                 case Key.OemQuestion:
                     HandleOperation("÷");
                     break;
-                case Key.NumPad5 when Keyboard.Modifiers == ModifierKeys.Shift:
                 case Key.D5 when Keyboard.Modifiers == ModifierKeys.Shift:
-                    HandleOperation("%");
+                case Key.NumPad5 when Keyboard.Modifiers == ModifierKeys.Shift:
+                    HandlePercentOperation();
                     break;
                 case Key.Enter:
                     HandleOperation("=");
@@ -371,6 +371,65 @@ namespace Calculator
             // Actualizăm afișajul
             UpdateDisplay();
         }
+
+        private void HandlePercentOperation()
+        {
+            // Verificăm dacă avem o operație în așteptare neefectuată
+            if (!string.IsNullOrEmpty(_engine.GetPendingOperation()) && !_isNewNumber)
+            {
+                // Executăm mai întâi operația în așteptare pentru a obține rezultatul
+                double currentValue = ParseCurrentValue();
+                _engine.Calculate(currentValue);
+
+                // Acum calculăm procentul din rezultat
+                double result = _engine.Result / 100;
+
+                // Actualizăm string-ul curent
+                _currentNumberString = result.ToString(CultureInfo.InvariantCulture);
+                _hasDecimal = _currentNumberString.Contains(".");
+
+                // Înlocuim punctul cu separatorul zecimal specific culturii
+                if (_hasDecimal)
+                {
+                    _currentNumberString = _currentNumberString.Replace(".", _currentCulture.NumberFormat.NumberDecimalSeparator);
+                }
+
+                // Afișăm rezultatul
+                UpdateDisplay();
+
+                // Setăm valoarea în motor
+                _engine.SetValue(result);
+
+                // Resetăm operația în așteptare
+                _engine.SetPendingOperation("");
+            }
+            else
+            {
+                // Comportamentul normal pentru % când nu avem operație în așteptare
+                double currentValue = ParseCurrentValue();
+                double result = currentValue / 100;
+
+                // Actualizăm string-ul curent
+                _currentNumberString = result.ToString(CultureInfo.InvariantCulture);
+                _hasDecimal = _currentNumberString.Contains(".");
+
+                // Înlocuim punctul cu separatorul zecimal specific culturii
+                if (_hasDecimal)
+                {
+                    _currentNumberString = _currentNumberString.Replace(".", _currentCulture.NumberFormat.NumberDecimalSeparator);
+                }
+
+                // Afișăm rezultatul
+                UpdateDisplay();
+
+                // Setăm valoarea în motor
+                _engine.SetValue(result);
+            }
+
+            _isNewNumber = true;
+            _isResultDisplayed = true;
+        }
+
 
         /// <summary>
         /// Gestionează schimbarea semnului numărului (+/-)
@@ -671,8 +730,18 @@ namespace Calculator
         {
             Button button = (Button)sender;
             string operation = button.Content.ToString();
-            HandleOperation(operation);
+
+            if (operation == "%")
+            {
+                HandlePercentOperation();
+            }
+            else
+            {
+                HandleOperation(operation);
+            }
         }
+
+
 
         // Eveniment pentru butonul egal
         private void Equal_Click(object sender, RoutedEventArgs e)

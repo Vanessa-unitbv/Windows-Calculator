@@ -90,19 +90,13 @@ namespace Calculator
                     Result /= currentValue;
                     break;
                 case "%":
-                    if(Result== 0)
-                    {
-                        Result = currentValue / 100;
-                    }
-                    else
-                    {
-                        Result = Result * currentValue / 100;
-                    }
+                    // Tratăm % ca un operator care transformă valoarea curentă în procent
+                    Result = currentValue / 100 * Result;
                     break;
-            }
 
-            // Nu resetăm _pendingOperation aici
-            // Ca să tratăm corect operațiile "în cascadă"
+                    // Nu resetăm _pendingOperation aici
+                    // Ca să tratăm corect operațiile "în cascadă"
+            }
         }
 
         #endregion
