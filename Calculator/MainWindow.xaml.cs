@@ -51,12 +51,18 @@ namespace Calculator
             LoadSettings();
         }
 
+        // Modificare pentru metoda MainWindow_KeyDown
         private void MainWindow_KeyDown(object sender, KeyEventArgs e)
         {
-            // Trimite tastele doar la managerul modului standard
+            // Trimite tastele la managerul corespunzător modului curent
             if (_modeManager.CurrentMode == CalculatorModeManager.CalculatorMode.Standard)
             {
                 _calculatorManager.HandleKeyPress(e);
+            }
+            else if (_modeManager.CurrentMode == CalculatorModeManager.CalculatorMode.Programmer)
+            {
+                // Redirecționează apăsările de taste către managerul pentru modul Programmer
+                _programmerCalculatorManager.HandleKeyPress(e);
             }
         }
 
@@ -223,5 +229,6 @@ namespace Calculator
         {
             // Nu avem nevoie să implementăm această metodă, deoarece evenimentele sunt atașate în CalculatorModeManager
         }
+        
     }
 }
