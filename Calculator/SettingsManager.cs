@@ -47,7 +47,6 @@ namespace Calculator
             // Calea către fișierul de setări în directorul aplicației
             _settingsFilePath = Path.Combine(appDirectory, "settings.xml");
 
-          
 
             LoadSettings();
         }
@@ -75,8 +74,6 @@ namespace Calculator
                     {
                         _currentSettings = (CalculatorSettings)serializer.Deserialize(fs);
                     }
-
-                    
                 }
                 catch (Exception ex)
                 {
@@ -126,6 +123,19 @@ namespace Calculator
                 SaveSettings();
             }
         }
+
+        /// <summary>
+        /// Obține sau setează ultimul mod selectat al calculatorului
+        /// </summary>
+        public string LastCalculatorMode
+        {
+            get { return _currentSettings.LastCalculatorMode; }
+            set
+            {
+                _currentSettings.LastCalculatorMode = value;
+                SaveSettings();
+            }
+        }
     }
 
     /// <summary>
@@ -137,6 +147,9 @@ namespace Calculator
         // Setarea pentru gruparea cifrelor
         public bool UseDigitGrouping { get; set; }
 
+        // Setarea pentru ultimul mod selectat al calculatorului
+        public string LastCalculatorMode { get; set; }
+
         /// <summary>
         /// Constructor implicit
         /// </summary>
@@ -144,6 +157,9 @@ namespace Calculator
         {
             // Valoarea implicită pentru digit grouping este dezactivată
             UseDigitGrouping = false;
+
+            // Valoarea implicită pentru modul calculatorului este Standard
+            LastCalculatorMode = "Standard";
         }
     }
 }

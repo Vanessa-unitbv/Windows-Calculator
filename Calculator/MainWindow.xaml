@@ -24,6 +24,10 @@
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="border" Property="Background" Value="SandyBrown"/>
                             </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="border" Property="Background" Value="#FFE8E8E8"/>
+                                <Setter Property="Foreground" Value="#FF9E9E9E"/>
+                            </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
@@ -50,8 +54,8 @@
                 <MenuItem Header="Digit Grouping" IsCheckable="True" Background="PapayaWhip"/>
             </MenuItem>
             <MenuItem Header="Mode">
-                <MenuItem Header="Standard" Background="PapayaWhip"/>
-                <MenuItem Header="Programmer" Background="PapayaWhip"/>
+                <MenuItem Name="StandardModeMenuItem" Header="Standard" Click="StandardModeMenuItem_Click" IsCheckable="True" IsChecked="True" Background="PapayaWhip"/>
+                <MenuItem Name="ProgrammerModeMenuItem" Header="Programmer" Click="ProgrammerModeMenuItem_Click" IsCheckable="True" Background="PapayaWhip"/>
                 <MenuItem Header="Order of Operations" Background="PapayaWhip" />
             </MenuItem>
         </Menu>
@@ -79,7 +83,8 @@
             </ListBox.ToolTip>
         </ListBox>
 
-        <Grid Grid.Row="2">
+        <!-- Grid pentru modul Standard -->
+        <Grid Grid.Row="2" Name="StandardCalculatorGrid">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
@@ -100,7 +105,6 @@
                 <Button Grid.Column="3" Content="M+" Background="Moccasin" Style="{StaticResource CalculatorButtonStyle}"/>
                 <Button Grid.Column="4" Content="M-" Background="Moccasin" Style="{StaticResource CalculatorButtonStyle}"/>
                 <Button Grid.Column="5" Content="M>" Click="MemoryShow_Click" Background="Moccasin" Style="{StaticResource CalculatorButtonStyle}"/>
-
             </Grid>
 
             <Grid Grid.Row="1">
@@ -147,6 +151,101 @@
                 <Button Grid.Row="5" Grid.Column="1" Content="0" Background="PapayaWhip" Style="{StaticResource CalculatorButtonStyle}"/>
                 <Button Grid.Row="5" Grid.Column="2" Content="," Background="Moccasin" Style="{StaticResource CalculatorButtonStyle}"/>
                 <Button Grid.Row="5" Grid.Column="3" Content="=" Background="Moccasin" Style="{StaticResource CalculatorButtonStyle}"/>
+            </Grid>
+        </Grid>
+
+        <Grid Grid.Row="2" Name="ProgrammerCalculatorGrid" Visibility="Collapsed">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Number System Selection -->
+            <Grid Grid.Row="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <RadioButton Name="HexRadioButton" Grid.Column="0" Content="HEX" Margin="5"  GroupName="NumberSystem"  IsChecked="True"  Foreground="SaddleBrown"/>
+                <RadioButton Name="DecRadioButton" Grid.Column="1" Content="DEC" Margin="5" GroupName="NumberSystem" Foreground="SaddleBrown"/>
+                <RadioButton Name="OctRadioButton" Grid.Column="2" Content="OCT" Margin="5" GroupName="NumberSystem" Foreground="SaddleBrown"/>
+                <RadioButton Name="BinRadioButton" Grid.Column="3" Content="BIN" Margin="5" GroupName="NumberSystem" Foreground="SaddleBrown"/>
+            </Grid>
+            
+            <Grid Grid.Row="1" Margin="0,5,0,5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="HEX"  Foreground="SaddleBrown" Margin="5,2"/>
+                <TextBlock Grid.Row="1" Grid.Column="0" Text="DEC"  Foreground="SaddleBrown" Margin="5,2"/>
+                <TextBlock Grid.Row="2" Grid.Column="0" Text="OCT" Foreground="SaddleBrown" Margin="5,2"/>
+                <TextBlock Grid.Row="3" Grid.Column="0" Text="BIN" Foreground="SaddleBrown" Margin="5,2"/>
+                <TextBox Grid.Row="0"  Grid.Column="1" Name="HexValueTextBox" IsReadOnly="True" Background="FloralWhite"   Margin="2"/>
+                <TextBox Grid.Row="1"  Grid.Column="1" Name="DecValueTextBox" IsReadOnly="True" Background="FloralWhite" Margin="2"/>
+                <TextBox Grid.Row="2" Grid.Column="1" Name="OctValueTextBox" IsReadOnly="True" Background="FloralWhite" Margin="2"/>
+                <TextBox Grid.Row="3" Grid.Column="1" Name="BinValueTextBox" IsReadOnly="True" Background="FloralWhite" Margin="2"/>
+            </Grid>
+
+            <!-- Main Buttons Grid -->
+            <Grid Grid.Row="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- First Row -->
+                <Button Grid.Row="0" Grid.Column="0" Content="A" Background="Tan" Style="{StaticResource CalculatorButtonStyle}" Name="ButtonA"/>
+                <Button Grid.Row="0" Grid.Column="1" Content="%" Background="Moccasin" Style="{StaticResource CalculatorButtonStyle}" />
+                <Button Grid.Row="0" Grid.Column="2" Content="CE" Background="Moccasin" Style="{StaticResource CalculatorButtonStyle}" />
+                <Button Grid.Row="0" Grid.Column="3" Content="C" Background="Moccasin" Style="{StaticResource CalculatorButtonStyle}" Name="ButtonClearP"/>
+                <Button Grid.Row="0" Grid.Column="4" Content="⌫" Background="Moccasin" Style="{StaticResource CalculatorButtonStyle}" Name="ButtonBackspaceP"/>
+
+                <!-- Hexadecimal and Numeric Buttons -->
+                <Button Grid.Row="1" Grid.Column="0" Content="B" Background="Tan" Style="{StaticResource CalculatorButtonStyle}" Name="ButtonB"/>
+                <Button Grid.Row="1" Grid.Column="1" Content="7" Background="PapayaWhip" Style="{StaticResource CalculatorButtonStyle}" Name="Button7P"/>
+                <Button Grid.Row="1" Grid.Column="2" Content="8" Background="PapayaWhip" Style="{StaticResource CalculatorButtonStyle}" Name="Button8P"/>
+                <Button Grid.Row="1" Grid.Column="3" Content="9" Background="PapayaWhip" Style="{StaticResource CalculatorButtonStyle}" Name="Button9P"/>
+                <Button Grid.Row="1" Grid.Column="4" Content="*" Background="Moccasin" Style="{StaticResource CalculatorButtonStyle}" />
+
+                <Button Grid.Row="2" Grid.Column="0" Content="C" Background="Tan" Style="{StaticResource CalculatorButtonStyle}" Name="ButtonC"/>
+                <Button Grid.Row="2" Grid.Column="1" Content="4" Background="PapayaWhip" Style="{StaticResource CalculatorButtonStyle}" Name="Button4P"/>
+                <Button Grid.Row="2" Grid.Column="2" Content="5" Background="PapayaWhip" Style="{StaticResource CalculatorButtonStyle}" Name="Button5P"/>
+                <Button Grid.Row="2" Grid.Column="3" Content="6" Background="PapayaWhip" Style="{StaticResource CalculatorButtonStyle}" Name="Button6P"/>
+                <Button Grid.Row="2" Grid.Column="4" Content="÷" Background="Moccasin" Style="{StaticResource CalculatorButtonStyle}"/>
+
+                <Button Grid.Row="3" Grid.Column="0" Content="D" Background="Tan" Style="{StaticResource CalculatorButtonStyle}" Name="ButtonD"/>
+                <Button Grid.Row="3" Grid.Column="1" Content="1" Background="PapayaWhip" Style="{StaticResource CalculatorButtonStyle}" Name="Button1P"/>
+                <Button Grid.Row="3" Grid.Column="2" Content="2" Background="PapayaWhip" Style="{StaticResource CalculatorButtonStyle}" Name="Button2P" />
+                <Button Grid.Row="3" Grid.Column="3" Content="3" Background="PapayaWhip" Style="{StaticResource CalculatorButtonStyle}" Name="Button3P"/>
+                <Button Grid.Row="3" Grid.Column="4" Content="+" Background="Moccasin" Style="{StaticResource CalculatorButtonStyle}"  Name="ButtonAddP"/>
+
+                <Button Grid.Row="4" Grid.Column="0" Content="E" Background="Tan" Style="{StaticResource CalculatorButtonStyle}" Name="ButtonE"/>
+                <Button Grid.Row="4" Grid.Column="1" Content="F" Background="Tan" Style="{StaticResource CalculatorButtonStyle}" Name="ButtonF"/>
+                <Button Grid.Row="4" Grid.Column="2" Content="0" Background="PapayaWhip" Style="{StaticResource CalculatorButtonStyle}" Name="Button0P"/>
+                <Button Grid.Row="4" Grid.Column="3" Content="-" Background="Moccasin" Style="{StaticResource CalculatorButtonStyle}"  Name="ButtonSubtractP"/>
+                <Button Grid.Row="4" Grid.Column="4" Content="=" Background="Moccasin" Style="{StaticResource CalculatorButtonStyle}" Name="ButtonEqualP"/>
             </Grid>
         </Grid>
     </Grid>

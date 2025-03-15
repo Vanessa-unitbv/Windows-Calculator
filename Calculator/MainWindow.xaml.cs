@@ -10,7 +10,9 @@ namespace Calculator
     public partial class MainWindow : Window
     {
         private CalculatorManager _calculatorManager;
+        private ProgrammerCalculatorManager _programmerCalculatorManager;
         private CalculatorMemoryManager _memoryManager;
+        private CalculatorModeManager _modeManager;
         private ClipboardManager _clipboardManager;
 
         public MainWindow()
@@ -27,11 +29,17 @@ namespace Calculator
             // Inițializează managerul de memorie
             _memoryManager = new CalculatorMemoryManager(MemoryListBox);
 
-            // Inițializează și configurează managerul calculatorului
+            // Inițializează și configurează managerul calculatorului Standard
             _calculatorManager = new CalculatorManager(this, _memoryManager);
+
+            // Inițializează și configurează managerul calculatorului Programmer
+            _programmerCalculatorManager = new ProgrammerCalculatorManager(this);
 
             // Inițializează managerul de clipboard
             _clipboardManager = new ClipboardManager(ResultTextBox, _calculatorManager);
+
+            // Inițializează managerul de moduri
+            _modeManager = new CalculatorModeManager(this, _calculatorManager, _programmerCalculatorManager, _memoryManager);
 
             // Atașează evenimentul pentru tastele de la tastatură
             KeyDown += MainWindow_KeyDown;
@@ -45,7 +53,11 @@ namespace Calculator
 
         private void MainWindow_KeyDown(object sender, KeyEventArgs e)
         {
-            _calculatorManager.HandleKeyPress(e);
+            // Trimite tastele doar la managerul modului standard
+            if (_modeManager.CurrentMode == CalculatorModeManager.CalculatorMode.Standard)
+            {
+                _calculatorManager.HandleKeyPress(e);
+            }
         }
 
         /// <summary>
@@ -64,6 +76,9 @@ namespace Calculator
 
             // Setează gruparea de digiti în calculator
             _calculatorManager.SetDigitGrouping(useDigitGrouping);
+
+            // Încarcă setările specifice modului
+            _modeManager.LoadSettings();
         }
 
         /// <summary>
@@ -176,9 +191,6 @@ namespace Calculator
                 // Luam direct starea actuală a checkbox-ului
                 bool isChecked = menuItem.IsChecked;
 
-                // Debug: afișăm starea
-                MessageBox.Show($"Digit grouping: {isChecked}");
-
                 // Setează gruparea de digiti în calculator
                 _calculatorManager.SetDigitGrouping(isChecked);
 
@@ -194,6 +206,22 @@ namespace Calculator
         {
             // Folosește CalculatorManager pentru a afișa informații despre aplicație
             _calculatorManager.ShowAboutInfo();
+        }
+
+        /// <summary>
+        /// Eveniment pentru selectarea modului Standard - delegat către ModeManager
+        /// </summary>
+        private void StandardModeMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            // Nu avem nevoie să implementăm această metodă, deoarece evenimentele sunt atașate în CalculatorModeManager
+        }
+
+        /// <summary>
+        /// Eveniment pentru selectarea modului Programmer - delegat către ModeManager
+        /// </summary>
+        private void ProgrammerModeMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            // Nu avem nevoie să implementăm această metodă, deoarece evenimentele sunt atașate în CalculatorModeManager
         }
     }
 }
