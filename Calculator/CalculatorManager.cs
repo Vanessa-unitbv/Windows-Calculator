@@ -219,9 +219,6 @@ namespace Calculator
                 case Key.OemComma:
                     HandleDecimalInput();
                     break;
-                case Key.OemPlus:
-                    HandleOperation("+");
-                    break;
                 case Key.OemMinus:
                     HandleOperation("-");
                     break;
@@ -244,6 +241,13 @@ namespace Calculator
                 case Key.Back:
                     HandleBackspace();
                     break;
+                case Key.OemPlus when Keyboard.Modifiers != ModifierKeys.Shift:
+                    HandleOperation("+");
+                    break;
+                case Key.OemPlus when Keyboard.Modifiers == ModifierKeys.Shift:
+                    HandleOperation("=");
+                    break;
+
             }
         }
 

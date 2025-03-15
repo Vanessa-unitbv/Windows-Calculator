@@ -129,8 +129,51 @@ namespace Calculator
             // Inițializăm afișajul valorilor cu 0
             UpdateAllDisplays(0);
 
+            // Încărcăm ultima bază numerică utilizată
+            LoadNumberSystemSettings();
+
             // Actualizează starea butoanelor conform sistemului numeric curent
             UpdateButtonsState();
+        }
+
+        /// <summary>
+        /// Încarcă setările pentru baza numerică și le aplică
+        /// </summary>
+        private void LoadNumberSystemSettings()
+        {
+            // Obține ultima bază numerică utilizată din SettingsManager
+            string lastNumberSystem = SettingsManager.Instance.LastNumberSystem;
+
+            // Aplică setarea
+            switch (lastNumberSystem)
+            {
+                case "HEX":
+                    _currentNumberSystem = NumberSystem.HEX;
+                    if (_hexRadioButton != null)
+                        _hexRadioButton.IsChecked = true;
+                    break;
+                case "DEC":
+                    _currentNumberSystem = NumberSystem.DEC;
+                    if (_decRadioButton != null)
+                        _decRadioButton.IsChecked = true;
+                    break;
+                case "OCT":
+                    _currentNumberSystem = NumberSystem.OCT;
+                    if (_octRadioButton != null)
+                        _octRadioButton.IsChecked = true;
+                    break;
+                case "BIN":
+                    _currentNumberSystem = NumberSystem.BIN;
+                    if (_binRadioButton != null)
+                        _binRadioButton.IsChecked = true;
+                    break;
+                default:
+                    // Setare implicită în caz de eroare
+                    _currentNumberSystem = NumberSystem.HEX;
+                    if (_hexRadioButton != null)
+                        _hexRadioButton.IsChecked = true;
+                    break;
+            }
         }
 
         /// <summary>
@@ -208,6 +251,9 @@ namespace Calculator
                         _currentNumberSystem = NumberSystem.BIN;
                         break;
                 }
+
+                // Salvează setarea în SettingsManager
+                SettingsManager.Instance.LastNumberSystem = system;
 
                 // Actualizează afișajul
                 UpdateAllDisplays(_currentValue);
@@ -347,14 +393,6 @@ namespace Calculator
         }
 
         /// <summary>
-        /// Gestionează evenimentul de click pe butonul egal (=)
-        /// </summary>
-        private void Equal_Click(object sender, RoutedEventArgs e)
-        {
-            PerformCalculation();
-        }
-
-        /// <summary>
         /// Gestionează evenimentul de click pe butonul Clear (C)
         /// </summary>
         private void Clear_Click(object sender, RoutedEventArgs e)
@@ -395,56 +433,6 @@ namespace Calculator
             UpdateAllDisplays(_currentValue);
         }
 
-        /// <summary>
-        /// Efectuează calculul cu operația în așteptare
-        /// </summary>
-        private void PerformCalculation()
-        {
-            if (string.IsNullOrEmpty(_pendingOperation))
-                return;
-
-            long rightOperand = _currentValue;
-
-            try
-            {
-                switch (_pendingOperation)
-                {
-                    case "+":
-                        _currentValue = _leftOperand + rightOperand;
-                        break;
-                    case "-":
-                        _currentValue = _leftOperand - rightOperand;
-                        break;
-                    case "*":
-                    case "×":
-                        _currentValue = _leftOperand * rightOperand;
-                        break;
-                    case "÷":
-                        if (rightOperand == 0)
-                        {
-                            MessageBox.Show("Împărțirea la zero nu este permisă!", "Eroare", MessageBoxButton.OK, MessageBoxImage.Error);
-                            return;
-                        }
-                        _currentValue = _leftOperand / rightOperand;
-                        break;
-                    case "%":
-                        _currentValue = _leftOperand % rightOperand;
-                        break;
-                }
-
-                // Actualizăm afișajele cu rezultatul nou
-                UpdateAllDisplays(_currentValue);
-
-                // Resetăm pentru o nouă operație
-                _pendingOperation = "";
-                _isNewNumber = true;
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Eroare la calculare: {ex.Message}", "Eroare", MessageBoxButton.OK, MessageBoxImage.Error);
-                Reset(); // Resetăm calculatorul în caz de eroare
-            }
-        }
 
         /// <summary>
         /// Actualizează starea butoanelor în funcție de sistemul numeric selectat
@@ -574,11 +562,8 @@ namespace Calculator
 
             UpdateAllDisplays(0);
 
-            // Setează sistemul hexazecimal ca implicit
-            _currentNumberSystem = NumberSystem.HEX;
-
-            if (_hexRadioButton != null)
-                _hexRadioButton.IsChecked = true;
+            // Încărcăm ultima bază numerică utilizată
+            LoadNumberSystemSettings();
 
             // Actualizează starea butoanelor
             UpdateButtonsState();
@@ -619,123 +604,207 @@ namespace Calculator
         }
 
         /// <summary>
+        /// Efectuează calculul cu operația în așteptare
+        /// </summary>
+        public void PerformCalculation()
+        {
+            if (string.IsNullOrEmpty(_pendingOperation))
+                return;
+
+            long rightOperand = _currentValue;
+
+            try
+            {
+                switch (_pendingOperation)
+                {
+                    case "+":
+                        _currentValue = _leftOperand + rightOperand;
+                        break;
+                    case "-":
+                        _currentValue = _leftOperand - rightOperand;
+                        break;
+                    case "*":
+                    case "×":
+                    case "x":
+                        _currentValue = _leftOperand * rightOperand;
+                        break;
+                    case "/":
+                    case "÷":
+                        if (rightOperand == 0)
+                        {
+                            MessageBox.Show("Împărțirea la zero nu este permisă!", "Eroare", MessageBoxButton.OK, MessageBoxImage.Error);
+                            return;
+                        }
+                        _currentValue = _leftOperand / rightOperand;
+                        break;
+                    case "%":
+                        if (rightOperand == 0)
+                        {
+                            MessageBox.Show("Împărțirea la zero nu este permisă!", "Eroare", MessageBoxButton.OK, MessageBoxImage.Error);
+                            return;
+                        }
+                        _currentValue = _leftOperand % rightOperand;
+                        break;
+                }
+
+                // Actualizăm afișajele cu rezultatul nou
+                UpdateAllDisplays(_currentValue);
+
+                // Resetăm pentru o nouă operație, dar păstrăm valoarea curentă ca potențial operand stâng pentru următoarea operație
+                _leftOperand = _currentValue;
+                _pendingOperation = "";
+                _isNewNumber = true;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Eroare la calculare: {ex.Message}", "Eroare", MessageBoxButton.OK, MessageBoxImage.Error);
+                Reset(); // Resetăm calculatorul în caz de eroare
+            }
+        }
+
+        /// <summary>
         /// Gestionează apăsările de taste de la tastatură pentru modul Programmer
         /// </summary>
         /// <param name="e">Datele evenimentului</param>
         public void HandleKeyPress(KeyEventArgs e)
         {
-            switch (e.Key)
+            try
             {
-                case Key.NumPad0:
-                case Key.D0:
-                    if (IsValidDigit(0))
-                        AppendDigit(0);
-                    break;
-                case Key.NumPad1:
-                case Key.D1:
-                    if (IsValidDigit(1))
-                        AppendDigit(1);
-                    break;
-                case Key.NumPad2:
-                case Key.D2:
-                    if (IsValidDigit(2))
-                        AppendDigit(2);
-                    break;
-                case Key.NumPad3:
-                case Key.D3:
-                    if (IsValidDigit(3))
-                        AppendDigit(3);
-                    break;
-                case Key.NumPad4:
-                case Key.D4:
-                    if (IsValidDigit(4))
-                        AppendDigit(4);
-                    break;
-                case Key.NumPad5:
-                case Key.D5:
-                    if (IsValidDigit(5))
-                        AppendDigit(5);
-                    break;
-                case Key.NumPad6:
-                case Key.D6:
-                    if (IsValidDigit(6))
-                        AppendDigit(6);
-                    break;
-                case Key.NumPad7:
-                case Key.D7:
-                    if (IsValidDigit(7))
-                        AppendDigit(7);
-                    break;
-                case Key.NumPad8:
-                case Key.D8:
-                    if (IsValidDigit(8))
-                        AppendDigit(8);
-                    break;
-                case Key.NumPad9:
-                case Key.D9:
-                    if (IsValidDigit(9))
-                        AppendDigit(9);
-                    break;
-                case Key.A:
-                    if (_currentNumberSystem == NumberSystem.HEX)
-                        AppendDigit(10);
-                    break;
-                case Key.B:
-                    if (_currentNumberSystem == NumberSystem.HEX)
-                        AppendDigit(11);
-                    break;
-                case Key.C:
-                    if (_currentNumberSystem == NumberSystem.HEX)
-                        AppendDigit(12);
-                    break;
-                case Key.D:
-                    if (_currentNumberSystem == NumberSystem.HEX)
-                        AppendDigit(13);
-                    break;
-                case Key.E:
-                    if (_currentNumberSystem == NumberSystem.HEX)
-                        AppendDigit(14);
-                    break;
-                case Key.F:
-                    if (_currentNumberSystem == NumberSystem.HEX)
-                        AppendDigit(15);
-                    break;
-                case Key.OemPlus:
-                case Key.Add:
-                    _leftOperand = _currentValue;
-                    _pendingOperation = "+";
-                    _isNewNumber = true;
-                    break;
-                case Key.OemMinus:
-                case Key.Subtract:
-                    _leftOperand = _currentValue;
-                    _pendingOperation = "-";
-                    _isNewNumber = true;
-                    break;
-                case Key.Multiply:
-                    _leftOperand = _currentValue;
-                    _pendingOperation = "*";
-                    _isNewNumber = true;
-                    break;
-                case Key.Divide:
-                case Key.OemQuestion:
-                    _leftOperand = _currentValue;
-                    _pendingOperation = "÷";
-                    _isNewNumber = true;
-                    break;
-                case Key.Enter:
-                    PerformCalculation();
-                    break;
-                case Key.Escape:
-                    Clear_Click(null, null);
-                    break;
-                case Key.Back:
-                    Backspace_Click(null, null);
-                    break;
-            }
+                // Tratăm special Enter și tasta =
+                if (e.Key == Key.Enter || (e.Key == Key.OemPlus && Keyboard.Modifiers == ModifierKeys.Shift))
+                {
+                    SimulateEqualClick();
+                    e.Handled = true;
+                    return;
+                }
 
-            // Marcăm evenimentul ca procesat pentru a preveni propagarea
-            e.Handled = true;
+                // Gestionăm operatorii
+                switch (e.Key)
+                {
+                    case Key.Add:
+                    case Key.OemPlus when Keyboard.Modifiers != ModifierKeys.Shift:
+                        Operator_Click(new Button { Content = "+" }, new RoutedEventArgs());
+                        break;
+                    case Key.Subtract:
+                    case Key.OemMinus:
+                        Operator_Click(new Button { Content = "-" }, new RoutedEventArgs());
+                        break;
+                    case Key.Multiply:
+                        Operator_Click(new Button { Content = "*" }, new RoutedEventArgs());
+                        break;
+                    case Key.Divide:
+                    case Key.OemQuestion:
+                        Operator_Click(new Button { Content = "÷" }, new RoutedEventArgs());
+                        break;
+                    case Key.Escape:
+                        Clear_Click(null, null);
+                        break;
+                    case Key.Back:
+                        Backspace_Click(null, null);
+                        break;
+                    // Gestionăm cifrele
+                    case Key.NumPad0:
+                    case Key.D0:
+                        if (IsValidDigit(0))
+                            AppendDigit(0);
+                        break;
+                    case Key.NumPad1:
+                    case Key.D1:
+                        if (IsValidDigit(1))
+                            AppendDigit(1);
+                        break;
+                    case Key.NumPad2:
+                    case Key.D2:
+                        if (IsValidDigit(2))
+                            AppendDigit(2);
+                        break;
+                    case Key.NumPad3:
+                    case Key.D3:
+                        if (IsValidDigit(3))
+                            AppendDigit(3);
+                        break;
+                    case Key.NumPad4:
+                    case Key.D4:
+                        if (IsValidDigit(4))
+                            AppendDigit(4);
+                        break;
+                    case Key.NumPad5:
+                    case Key.D5:
+                        if (IsValidDigit(5))
+                            AppendDigit(5);
+                        break;
+                    case Key.NumPad6:
+                    case Key.D6:
+                        if (IsValidDigit(6))
+                            AppendDigit(6);
+                        break;
+                    case Key.NumPad7:
+                    case Key.D7:
+                        if (IsValidDigit(7))
+                            AppendDigit(7);
+                        break;
+                    case Key.NumPad8:
+                    case Key.D8:
+                        if (IsValidDigit(8))
+                            AppendDigit(8);
+                        break;
+                    case Key.NumPad9:
+                    case Key.D9:
+                        if (IsValidDigit(9))
+                            AppendDigit(9);
+                        break;
+                    case Key.A:
+                        if (_currentNumberSystem == NumberSystem.HEX)
+                            AppendDigit(10);
+                        break;
+                    case Key.B:
+                        if (_currentNumberSystem == NumberSystem.HEX && e.Key != Key.Back) // Evităm confuzia cu Backspace
+                            AppendDigit(11);
+                        break;
+                    case Key.C:
+                        if (_currentNumberSystem == NumberSystem.HEX)
+                            AppendDigit(12);
+                        break;
+                    case Key.D:
+                        if (_currentNumberSystem == NumberSystem.HEX && e.Key != Key.Delete) // Evităm confuzia cu Delete
+                            AppendDigit(13);
+                        break;
+                    case Key.E:
+                        if (_currentNumberSystem == NumberSystem.HEX && e.Key != Key.Escape) // Evităm confuzia cu Escape
+                            AppendDigit(14);
+                        break;
+                    case Key.F:
+                        if (_currentNumberSystem == NumberSystem.HEX)
+                            AppendDigit(15);
+                        break;
+                }
+
+                // Marcăm evenimentul ca procesat pentru a preveni propagarea
+                e.Handled = true;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Eroare la procesarea tastei: {ex.Message}", "Eroare", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
+        /// <summary>
+        /// Simulează un click pe butonul egal (pentru a fi apelat din exterior)
+        /// </summary>
+        public void SimulateEqualClick()
+        {
+            Equal_Click(null, new RoutedEventArgs());
+        }
+
+        /// <summary>
+        /// Gestionează evenimentul de click pe butonul egal (=)
+        /// </summary>
+        private void Equal_Click(object sender, RoutedEventArgs e)
+        {
+            // Pentru debugging puteți decomenta linia de mai jos
+            // MessageBox.Show("Equal_Click apelat", "Debug");
+
+            PerformCalculation();
+        }
+
     }
 }

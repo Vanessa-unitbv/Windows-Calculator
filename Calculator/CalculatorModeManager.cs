@@ -63,8 +63,8 @@ namespace Calculator
             // Atașează evenimentele pentru elementele de meniu
             AttachMenuEvents();
 
-            // Setează modul implicit
-            SetCalculatorMode(CalculatorMode.Standard);
+            // Setează modul implicit din setări
+            LoadSettings();
         }
 
         /// <summary>

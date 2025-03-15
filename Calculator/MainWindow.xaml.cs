@@ -14,7 +14,7 @@ namespace Calculator
         private CalculatorMemoryManager _memoryManager;
         private CalculatorModeManager _modeManager;
         private ClipboardManager _clipboardManager;
-
+      
         public MainWindow()
         {
             InitializeComponent();
@@ -51,7 +51,7 @@ namespace Calculator
             LoadSettings();
         }
 
-        // Modificare pentru metoda MainWindow_KeyDown
+      
         private void MainWindow_KeyDown(object sender, KeyEventArgs e)
         {
             // Trimite tastele la managerul corespunzător modului curent
@@ -61,13 +61,12 @@ namespace Calculator
             }
             else if (_modeManager.CurrentMode == CalculatorModeManager.CalculatorMode.Programmer)
             {
-                // Redirecționează apăsările de taste către managerul pentru modul Programmer
                 _programmerCalculatorManager.HandleKeyPress(e);
             }
         }
 
         /// <summary>
-        /// Încarcă setările salvate
+        /// Încărcă setările salvate
         /// </summary>
         private void LoadSettings()
         {

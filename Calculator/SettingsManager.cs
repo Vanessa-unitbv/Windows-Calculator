@@ -47,7 +47,6 @@ namespace Calculator
             // Calea către fișierul de setări în directorul aplicației
             _settingsFilePath = Path.Combine(appDirectory, "settings.xml");
 
-
             LoadSettings();
         }
 
@@ -136,6 +135,19 @@ namespace Calculator
                 SaveSettings();
             }
         }
+
+        /// <summary>
+        /// Obține sau setează ultima bază numerică utilizată în modul Programmer
+        /// </summary>
+        public string LastNumberSystem
+        {
+            get { return _currentSettings.LastNumberSystem; }
+            set
+            {
+                _currentSettings.LastNumberSystem = value;
+                SaveSettings();
+            }
+        }
     }
 
     /// <summary>
@@ -150,6 +162,9 @@ namespace Calculator
         // Setarea pentru ultimul mod selectat al calculatorului
         public string LastCalculatorMode { get; set; }
 
+        // Setarea pentru ultima bază numerică utilizată în modul Programmer
+        public string LastNumberSystem { get; set; }
+
         /// <summary>
         /// Constructor implicit
         /// </summary>
@@ -160,6 +175,9 @@ namespace Calculator
 
             // Valoarea implicită pentru modul calculatorului este Standard
             LastCalculatorMode = "Standard";
+
+            // Valoarea implicită pentru baza numerică este HEX
+            LastNumberSystem = "HEX";
         }
     }
 }
