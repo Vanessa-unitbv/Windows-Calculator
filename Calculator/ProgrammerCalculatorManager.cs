@@ -391,6 +391,7 @@ namespace Calculator
             {
                 string operation = button.Content.ToString();
 
+
                 // Dacă avem o operație în așteptare, efectuăm calculul mai întâi
                 if (!string.IsNullOrEmpty(_pendingOperation) && !_isNewNumber)
                 {
@@ -718,11 +719,6 @@ namespace Calculator
                         _currentValue = _leftOperand / rightOperand;
                         break;
                     case "%":
-                        if (rightOperand == 0)
-                        {
-                            MessageBox.Show("Împărțirea la zero nu este permisă!", "Eroare", MessageBoxButton.OK, MessageBoxImage.Error);
-                            return;
-                        }
                         _currentValue = _leftOperand % rightOperand;
                         break;
                 }
@@ -795,6 +791,10 @@ namespace Calculator
                     case Key.Divide:
                     case Key.OemQuestion:
                         Operator_Click(new Button { Content = "÷" }, new RoutedEventArgs());
+                        break;
+                    case Key.D5 when Keyboard.Modifiers == ModifierKeys.Shift:
+                    case Key.NumPad5 when Keyboard.Modifiers == ModifierKeys.Shift:
+                        Operator_Click(new Button { Content = "%" }, new RoutedEventArgs());
                         break;
                     case Key.Escape:
                         Clear_Click(null, null);
