@@ -83,7 +83,6 @@
             </ListBox.ToolTip>
         </ListBox>
 
-        <!-- Grid pentru modul Standard -->
         <Grid Grid.Row="2" Name="StandardCalculatorGrid">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -154,7 +153,6 @@
             </Grid>
         </Grid>
 
-        <!-- Actualizare pentru secțiunea Grid-ului din modul Programmer -->
         <Grid Grid.Row="2" Name="ProgrammerCalculatorGrid" Visibility="Collapsed">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -163,7 +161,6 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <!-- Number System Selection -->
             <Grid Grid.Row="0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -199,7 +196,6 @@
                 <TextBox Grid.Row="3" Grid.Column="1" Name="BinValueTextBox" IsReadOnly="True" Background="FloralWhite" Margin="2"/>
             </Grid>
 
-            <!-- Main Buttons Grid -->
             <Grid Grid.Row="2">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
@@ -216,14 +212,12 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <!-- First Row -->
                 <Button Grid.Row="0" Grid.Column="0" Content="A" Background="Tan" Style="{StaticResource CalculatorButtonStyle}" Name="ButtonHexA"/>
                 <Button Grid.Row="0" Grid.Column="1" Content="%" Background="Moccasin" Style="{StaticResource CalculatorButtonStyle}" Name="ButtonPercentP" />
                 <Button Grid.Row="0" Grid.Column="2" Content="CE" Background="Moccasin" Style="{StaticResource CalculatorButtonStyle}" Name="ButtonClearEntryP" />
                 <Button Grid.Row="0" Grid.Column="3" Content="C" Background="Moccasin" Style="{StaticResource CalculatorButtonStyle}" Name="ButtonClearP"/>
                 <Button Grid.Row="0" Grid.Column="4" Content="⌫" Background="Moccasin" Style="{StaticResource CalculatorButtonStyle}" Name="ButtonBackspaceP"/>
 
-                <!-- Hexadecimal and Numeric Buttons -->
                 <Button Grid.Row="1" Grid.Column="0" Content="B" Background="Tan" Style="{StaticResource CalculatorButtonStyle}" Name="ButtonHexB"/>
                 <Button Grid.Row="1" Grid.Column="1" Content="7" Background="PapayaWhip" Style="{StaticResource CalculatorButtonStyle}" Name="Button7P"/>
                 <Button Grid.Row="1" Grid.Column="2" Content="8" Background="PapayaWhip" Style="{StaticResource CalculatorButtonStyle}" Name="Button8P"/>

@@ -51,9 +51,34 @@ namespace Calculator
             LoadSettings();
         }
 
-      
+
         private void MainWindow_KeyDown(object sender, KeyEventArgs e)
         {
+            // Mai întâi verificăm dacă se comută între moduri sau se schimbă setarea de digit grouping
+            if (e.Key == Key.Tab && Keyboard.Modifiers == ModifierKeys.Control)
+            {
+                // Comutare rapidă între moduri cu Ctrl+Tab (opțional)
+                if (_modeManager.CurrentMode == CalculatorModeManager.CalculatorMode.Standard)
+                    _modeManager.SetCalculatorMode(CalculatorModeManager.CalculatorMode.Programmer);
+                else
+                    _modeManager.SetCalculatorMode(CalculatorModeManager.CalculatorMode.Standard);
+
+                e.Handled = true;
+                return;
+            }
+
+            // Curățăm orice stare intermediară incompletă la apăsarea Escape
+            if (e.Key == Key.Escape)
+            {
+                if (_modeManager.CurrentMode == CalculatorModeManager.CalculatorMode.Standard)
+                    _calculatorManager.Reset();
+                else
+                    _programmerCalculatorManager.Reset();
+
+                e.Handled = true;
+                return;
+            }
+
             // Trimite tastele la managerul corespunzător modului curent
             if (_modeManager.CurrentMode == CalculatorModeManager.CalculatorMode.Standard)
             {
@@ -65,6 +90,8 @@ namespace Calculator
             }
         }
 
+        // Versiune corectată pentru metoda LoadSettings din MainWindow.xaml.cs
+
         /// <summary>
         /// Încărcă setările salvate
         /// </summary>
@@ -73,16 +100,18 @@ namespace Calculator
             // Obține setarea pentru digit grouping din SettingsManager
             bool useDigitGrouping = SettingsManager.Instance.UseDigitGrouping;
 
-            // Găsește și actualizează starea checkbox-ului din meniu
+            // Actualizăm checkbox-ul din meniu
             if (FindMenuItem("Digit Grouping") is MenuItem digitGroupingMenuItem)
             {
                 digitGroupingMenuItem.IsChecked = useDigitGrouping;
             }
 
-            // Setează gruparea de digiti în calculator
+            // Aplicăm setarea la ambele managere inițial
             _calculatorManager.SetDigitGrouping(useDigitGrouping);
+            _programmerCalculatorManager.SetDigitGrouping(useDigitGrouping);
 
-            // Încarcă setările specifice modului
+            // Încărcăm modul implicit folosind metoda standard din modeManager
+            // care va aplica setările corecte și va actualiza interfața
             _modeManager.LoadSettings();
         }
 
@@ -193,13 +222,20 @@ namespace Calculator
         {
             if (sender is MenuItem menuItem)
             {
-                // Luam direct starea actuală a checkbox-ului
+                // Luăm direct starea actuală a checkbox-ului
                 bool isChecked = menuItem.IsChecked;
 
-                // Setează gruparea de digiti în calculator
-                _calculatorManager.SetDigitGrouping(isChecked);
+                // Aplicăm setarea de digit grouping direct în managerul curent pentru a nu afecta starea
+                if (_modeManager.CurrentMode == CalculatorModeManager.CalculatorMode.Standard)
+                {
+                    _calculatorManager.SetDigitGrouping(isChecked);
+                }
+                else // Programmer mode
+                {
+                    _programmerCalculatorManager.SetDigitGrouping(isChecked);
+                }
 
-                // Salvează setarea în SettingsManager
+                // Salvăm setarea în SettingsManager pentru persistență
                 SettingsManager.Instance.UseDigitGrouping = isChecked;
             }
         }
@@ -213,8 +249,6 @@ namespace Calculator
             _calculatorManager.ShowAboutInfo();
         }
 
-        /// <summary>
-        /// Eveniment pentru selectarea modului Standard - delegat către ModeManager
         /// </summary>
         private void StandardModeMenuItem_Click(object sender, RoutedEventArgs e)
         {
@@ -228,6 +262,5 @@ namespace Calculator
         {
             // Nu avem nevoie să implementăm această metodă, deoarece evenimentele sunt atașate în CalculatorModeManager
         }
-        
     }
 }

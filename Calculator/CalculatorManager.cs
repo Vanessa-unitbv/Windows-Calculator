@@ -166,88 +166,145 @@ namespace Calculator
 
         #region Keyboard Handling
 
+        // Modificare în CalculatorManager.cs pentru HandleKeyPress:
+
         /// <summary>
         /// Gestionează apăsările de taste de la tastatură
         /// </summary>
         /// <param name="e">Datele evenimentului</param>
         public void HandleKeyPress(KeyEventArgs e)
         {
-            switch (e.Key)
-            {
-                case Key.NumPad0:
-                case Key.D0:
-                    HandleDigitInput("0");
-                    break;
-                case Key.NumPad1:
-                case Key.D1:
-                    HandleDigitInput("1");
-                    break;
-                case Key.NumPad2:
-                case Key.D2:
-                    HandleDigitInput("2");
-                    break;
-                case Key.NumPad3:
-                case Key.D3:
-                    HandleDigitInput("3");
-                    break;
-                case Key.NumPad4:
-                case Key.D4:
-                    HandleDigitInput("4");
-                    break;
-                case Key.D5 when Keyboard.Modifiers != ModifierKeys.Shift:
-                case Key.NumPad5 when Keyboard.Modifiers != ModifierKeys.Shift:
-                    HandleDigitInput("5");
-                    break;
-                case Key.NumPad6:
-                case Key.D6:
-                    HandleDigitInput("6");
-                    break;
-                case Key.NumPad7:
-                case Key.D7:
-                    HandleDigitInput("7");
-                    break;
-                case Key.NumPad8:
-                case Key.D8:
-                    HandleDigitInput("8");
-                    break;
-                case Key.NumPad9:
-                case Key.D9:
-                    HandleDigitInput("9");
-                    break;
-                case Key.Decimal:
-                case Key.OemPeriod:
-                case Key.OemComma:
-                    HandleDecimalInput();
-                    break;
-                case Key.OemMinus:
-                    HandleOperation("-");
-                    break;
-                case Key.X:
-                    HandleOperation("x");
-                    break;
-                case Key.OemQuestion:
-                    HandleOperation("÷");
-                    break;
-                case Key.D5 when Keyboard.Modifiers == ModifierKeys.Shift:
-                case Key.NumPad5 when Keyboard.Modifiers == ModifierKeys.Shift:
-                    HandlePercentOperation();
-                    break;
-                case Key.Enter:
-                    HandleOperation("=");
-                    break;
-                case Key.Escape:
-                    ClearAll();
-                    break;
-                case Key.Back:
-                    HandleBackspace();
-                    break;
-                case Key.OemPlus when Keyboard.Modifiers != ModifierKeys.Shift:
-                    HandleOperation("+");
-                    break;
-                case Key.OemPlus when Keyboard.Modifiers == ModifierKeys.Shift:
-                    HandleOperation("=");
-                    break;
+            // Adăugăm un Log pentru debugare (poate fi eliminat după testare)
+            // Console.WriteLine($"Key Pressed in Standard Mode: {e.Key}, Modifiers: {Keyboard.Modifiers}");
 
+            try
+            {
+                switch (e.Key)
+                {
+                    // Gestionăm cifrele numeric
+                    case Key.NumPad0:
+                    case Key.D0:
+                        HandleDigitInput("0");
+                        e.Handled = true;
+                        break;
+                    case Key.NumPad1:
+                    case Key.D1:
+                        HandleDigitInput("1");
+                        e.Handled = true;
+                        break;
+                    case Key.NumPad2:
+                    case Key.D2:
+                        HandleDigitInput("2");
+                        e.Handled = true;
+                        break;
+                    case Key.NumPad3:
+                    case Key.D3:
+                        HandleDigitInput("3");
+                        e.Handled = true;
+                        break;
+                    case Key.NumPad4:
+                    case Key.D4:
+                        HandleDigitInput("4");
+                        e.Handled = true;
+                        break;
+                    case Key.D5 when Keyboard.Modifiers != ModifierKeys.Shift:
+                    case Key.NumPad5 when Keyboard.Modifiers != ModifierKeys.Shift:
+                        HandleDigitInput("5");
+                        e.Handled = true;
+                        break;
+                    case Key.NumPad6:
+                    case Key.D6:
+                        HandleDigitInput("6");
+                        e.Handled = true;
+                        break;
+                    case Key.NumPad7:
+                    case Key.D7:
+                        HandleDigitInput("7");
+                        e.Handled = true;
+                        break;
+                    case Key.NumPad8:
+                    case Key.D8:
+                        HandleDigitInput("8");
+                        e.Handled = true;
+                        break;
+                    case Key.NumPad9:
+                    case Key.D9:
+                        HandleDigitInput("9");
+                        e.Handled = true;
+                        break;
+
+                    // Tratăm clar separatoarele zecimale
+                    case Key.Decimal:
+                    case Key.OemPeriod:
+                    case Key.OemComma:
+                        HandleDecimalInput();
+                        e.Handled = true;
+                        break;
+
+                    // Tratăm operatorii matematici
+                    case Key.OemMinus:
+                    case Key.Subtract:
+                        HandleOperation("-");
+                        e.Handled = true;
+                        break;
+                    case Key.X:
+                        // Asigurăm-ne că nu confundăm cu alte comenzi
+                        if (Keyboard.Modifiers == ModifierKeys.None)
+                        {
+                            HandleOperation("x");
+                            e.Handled = true;
+                        }
+                        break;
+                    case Key.OemQuestion:
+                    case Key.Divide:
+                        HandleOperation("÷");
+                        e.Handled = true;
+                        break;
+                    case Key.D5 when Keyboard.Modifiers == ModifierKeys.Shift:
+                    case Key.NumPad5 when Keyboard.Modifiers == ModifierKeys.Shift:
+                        HandlePercentOperation();
+                        e.Handled = true;
+                        break;
+
+                    // Tratăm egal și Enter
+                    case Key.Enter:
+                    case Key.OemPlus when Keyboard.Modifiers == ModifierKeys.Shift:
+                        HandleOperation("=");
+                        e.Handled = true;
+                        break;
+
+                    // Tratăm Clear și Backspace
+                    case Key.Escape:
+                        ClearAll();
+                        e.Handled = true;
+                        break;
+                    case Key.Back:
+                        HandleBackspace();
+                        e.Handled = true;
+                        break;
+                    case Key.OemPlus when Keyboard.Modifiers != ModifierKeys.Shift:
+                    case Key.Add:
+                        HandleOperation("+");
+                        e.Handled = true;
+                        break;
+
+                    // Ignorăm explicit tastele care ar putea cauza probleme
+                    case Key.C:
+                    case Key.A:
+                    case Key.B:
+                    case Key.D:
+                    case Key.E:
+                    case Key.F:
+                        // Nu facem nimic, aceste taste sunt ignorăm în modul standard
+                        // pentru a preveni procesarea accidentală a cifrelor hexazecimale
+                        e.Handled = true;
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Eroare la procesarea tastei: {ex.Message}", "Eroare", MessageBoxButton.OK, MessageBoxImage.Error);
+                e.Handled = true;
             }
         }
 
@@ -705,9 +762,10 @@ namespace Calculator
         /// <param name="useGrouping">True pentru a activa gruparea, False pentru a o dezactiva</param>
         public void SetDigitGrouping(bool useGrouping)
         {
+            // Doar setăm flag-ul și actualizăm afișajul - fără a afecta alte variabile de stare
             _useDigitGrouping = useGrouping;
 
-            // Actualizăm afișajul cu starea curentă
+            // Actualizăm doar afișajul cu numerele curente
             UpdateDisplay();
         }
 

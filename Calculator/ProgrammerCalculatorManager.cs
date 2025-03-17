@@ -38,6 +38,8 @@ namespace Calculator
         // Valoarea din stânga operației
         private long _leftOperand = 0;
 
+        private bool _useDigitGrouping = false;
+
         // Butoanele pentru cifrele hexazecimale
         private readonly Button _buttonHexA;
         private readonly Button _buttonHexB;
@@ -134,6 +136,16 @@ namespace Calculator
 
             // Actualizează starea butoanelor conform sistemului numeric curent
             UpdateButtonsState();
+        }
+
+
+        public void SetDigitGrouping(bool useGrouping)
+        {
+            // Doar setăm flag-ul și actualizăm afișajul - fără a afecta alte variabile de stare
+            _useDigitGrouping = useGrouping;
+
+            // Actualizăm doar afișajul cu valoarea curentă
+            UpdateAllDisplays(_currentValue);
         }
 
         /// <summary>
@@ -510,6 +522,48 @@ namespace Calculator
             }
         }
 
+        private string FormatWithGrouping(string input, int groupSize)
+        {
+            // Verificăm dacă avem un număr negativ
+            bool isNegative = input.StartsWith("-");
+            if (isNegative)
+            {
+                input = input.Substring(1);
+            }
+
+            // Dacă șirul e prea scurt, nu aplicăm gruparea
+            if (input.Length <= groupSize)
+            {
+                return isNegative ? "-" + input : input;
+            }
+
+            // Obținem separatorul de grupare din cultura curentă
+            string separator = System.Globalization.CultureInfo.CurrentCulture.NumberFormat.NumberGroupSeparator;
+
+            // Aplicăm gruparea
+            System.Text.StringBuilder result = new System.Text.StringBuilder();
+
+            // Procesăm caracterele de la dreapta la stânga
+            for (int i = 0; i < input.Length; i++)
+            {
+                // Adăugăm separatorul după fiecare grup (dar nu la început)
+                if (i > 0 && i % groupSize == 0)
+                {
+                    result.Insert(0, separator);
+                }
+
+                result.Insert(0, input[input.Length - 1 - i]);
+            }
+
+            // Adăugăm semnul minus dacă e cazul
+            if (isNegative)
+            {
+                result.Insert(0, "-");
+            }
+
+            return result.ToString();
+        }
+
         /// <summary>
         /// Actualizează toate afișajele cu valoarea curentă
         /// </summary>
@@ -519,35 +573,57 @@ namespace Calculator
             // Actualizăm valoarea curentă
             _currentValue = value;
 
+            // Formatăm valorile în funcție de setarea de digit grouping
+            string hexString = value.ToString("X");
+            string decString = value.ToString();
+            string octString = Convert.ToString(value, 8);
+            string binString = Convert.ToString(value, 2);
+
+            // Aplicăm gruparea dacă este activată
+            if (_useDigitGrouping)
+            {
+                // Pentru HEX: grupare la fiecare 4 caractere
+                hexString = FormatWithGrouping(hexString, 4);
+
+                // Pentru DEC: grupare la fiecare 3 caractere (standard numeric)
+                decString = FormatWithGrouping(decString, 3);
+
+                // Pentru OCT: grupare la fiecare 3 caractere 
+                octString = FormatWithGrouping(octString, 3);
+
+                // Pentru BIN: grupare la fiecare 4 caractere
+                binString = FormatWithGrouping(binString, 4);
+            }
+
             // Actualizăm TextBox-ul principal conform sistemului numeric curent
             switch (_currentNumberSystem)
             {
                 case NumberSystem.HEX:
-                    ResultTextBox.Text = value.ToString("X");
+                    ResultTextBox.Text = hexString;
                     break;
                 case NumberSystem.DEC:
-                    ResultTextBox.Text = value.ToString();
+                    ResultTextBox.Text = decString;
                     break;
                 case NumberSystem.OCT:
-                    ResultTextBox.Text = Convert.ToString(value, 8);
+                    ResultTextBox.Text = octString;
                     break;
                 case NumberSystem.BIN:
-                    ResultTextBox.Text = Convert.ToString(value, 2);
+                    ResultTextBox.Text = binString;
                     break;
             }
 
             // Actualizăm toate TextBox-urile cu valorile în diferite baze numerice
             if (HexValueTextBox != null)
-                HexValueTextBox.Text = value.ToString("X");
+                HexValueTextBox.Text = hexString;
 
             if (DecValueTextBox != null)
-                DecValueTextBox.Text = value.ToString();
+                DecValueTextBox.Text = decString;
 
             if (OctValueTextBox != null)
-                OctValueTextBox.Text = Convert.ToString(value, 8);
+                OctValueTextBox.Text = octString;
 
             if (BinValueTextBox != null)
-                BinValueTextBox.Text = Convert.ToString(value, 2);
+                BinValueTextBox.Text = binString;
         }
 
         /// <summary>
@@ -560,6 +636,8 @@ namespace Calculator
             _pendingOperation = "";
             _isNewNumber = true;
 
+            // Păstrăm setarea de digit grouping - nu o resetăm
+            // dar aplicăm formatul la valorile inițiale
             UpdateAllDisplays(0);
 
             // Încărcăm ultima bază numerică utilizată
@@ -568,6 +646,8 @@ namespace Calculator
             // Actualizează starea butoanelor
             UpdateButtonsState();
         }
+
+      
 
         /// <summary>
         /// Schimbă sistemul numeric curent
@@ -662,6 +742,8 @@ namespace Calculator
             }
         }
 
+        // Modificare în ProgrammerCalculatorManager.cs pentru a procesa tastele mai bine
+
         /// <summary>
         /// Gestionează apăsările de taste de la tastatură pentru modul Programmer
         /// </summary>
@@ -670,7 +752,25 @@ namespace Calculator
         {
             try
             {
-                // Tratăm special Enter și tasta =
+                // Dezactivăm procesarea tastelor specifice modului standard pentru a evita conflicte
+                // între moduri când codul este partajat
+                if (e.Key == Key.C && Keyboard.Modifiers == ModifierKeys.None)
+                {
+                    // Verificăm dacă suntem în modul HEX, unde C este o cifră validă
+                    if (_currentNumberSystem == NumberSystem.HEX && !_isNewNumber)
+                    {
+                        AppendDigit(12); // C în hexazecimal
+                    }
+                    else
+                    {
+                        // Altfel tratăm ca butonul Clear
+                        Clear_Click(null, null);
+                    }
+                    e.Handled = true;
+                    return;
+                }
+
+                // Tratam Enter și tasta =
                 if (e.Key == Key.Enter || (e.Key == Key.OemPlus && Keyboard.Modifiers == ModifierKeys.Shift))
                 {
                     SimulateEqualClick();
@@ -753,24 +853,22 @@ namespace Calculator
                         if (IsValidDigit(9))
                             AppendDigit(9);
                         break;
+                    // Gestionare specială pentru cifrele hexazecimale
                     case Key.A:
                         if (_currentNumberSystem == NumberSystem.HEX)
                             AppendDigit(10);
                         break;
                     case Key.B:
-                        if (_currentNumberSystem == NumberSystem.HEX && e.Key != Key.Back) // Evităm confuzia cu Backspace
+                        if (_currentNumberSystem == NumberSystem.HEX)
                             AppendDigit(11);
                         break;
-                    case Key.C:
-                        if (_currentNumberSystem == NumberSystem.HEX)
-                            AppendDigit(12);
-                        break;
+                    // C este tratat special la început pentru a evita confuzia cu Clear
                     case Key.D:
-                        if (_currentNumberSystem == NumberSystem.HEX && e.Key != Key.Delete) // Evităm confuzia cu Delete
+                        if (_currentNumberSystem == NumberSystem.HEX)
                             AppendDigit(13);
                         break;
                     case Key.E:
-                        if (_currentNumberSystem == NumberSystem.HEX && e.Key != Key.Escape) // Evităm confuzia cu Escape
+                        if (_currentNumberSystem == NumberSystem.HEX)
                             AppendDigit(14);
                         break;
                     case Key.F:

@@ -4,9 +4,6 @@ using System.Windows.Controls;
 
 namespace Calculator
 {
-    /// <summary>
-    /// Clasa care gestionează comutarea între diferitele moduri ale calculatorului
-    /// </summary>
     public class CalculatorModeManager
     {
         // Referință la fereastra principală
@@ -87,12 +84,37 @@ namespace Calculator
             }
         }
 
+        // Modificare în CalculatorModeManager.cs - Metoda SetCalculatorMode
+
+        /// <summary>
+        /// Setează modul calculatorului și ajustează interfața în consecință
+        /// </summary>
+        /// <param name="mode">Modul calculatorului de setat</param>
+        // În CalculatorModeManager.cs - Actualizarea metodei SetCalculatorMode
+
+        /// <summary>
+        /// Setează modul calculatorului și ajustează interfața în consecință
+        /// </summary>
+        /// <param name="mode">Modul calculatorului de setat</param>
+        // În CalculatorModeManager.cs - Modificare în metoda SetCalculatorMode
+
         /// <summary>
         /// Setează modul calculatorului și ajustează interfața în consecință
         /// </summary>
         /// <param name="mode">Modul calculatorului de setat</param>
         public void SetCalculatorMode(CalculatorMode mode)
         {
+            // Dacă modul este același, nu facem nimic
+            if (_currentMode == mode)
+                return;
+
+            // Salvăm setarea curentă de digit grouping înainte de schimbare
+            bool useDigitGrouping = SettingsManager.Instance.UseDigitGrouping;
+
+            // Stocăm modul anterior pentru a putea face modificări specifice tranziției
+            CalculatorMode previousMode = _currentMode;
+
+            // Actualizăm modul curent
             _currentMode = mode;
 
             // Actualizează starea checkbox-urilor din meniu
@@ -109,24 +131,52 @@ namespace Calculator
             if (_programmerCalculatorGrid != null)
                 _programmerCalculatorGrid.Visibility = (mode == CalculatorMode.Programmer) ? Visibility.Visible : Visibility.Collapsed;
 
-            // Resetează managerul corespunzător modului
-            if (mode == CalculatorMode.Standard)
+            // Resetăm afișajul când trecem de la un mod la altul
+            // Doar dacă comutăm între moduri diferite
+            if (previousMode != mode)
             {
+                // Resetăm TextBox-ul principal când trecem între moduri
+                if (_mainWindow.ResultTextBox != null)
+                {
+                    _mainWindow.ResultTextBox.Text = "0";
+                }
+            }
+
+            // Verificăm dacă avem moduri valide înainte de a seta digit grouping
+            if (mode == CalculatorMode.Standard && _standardManager != null)
+            {
+                // Inițializăm afișajul standard cu zero
                 _standardManager.Reset();
 
-                // Ascunde stiva de memorie (dacă este vizibilă)
-                _memoryManager.HideMemoryStack();
-            }
-            else // Mode == CalculatorMode.Programmer
-            {
-                _programmerManager.Reset();
+                // Aplicăm setarea de digit grouping pentru modul standard
+                _standardManager.SetDigitGrouping(useDigitGrouping);
 
                 // Ascunde stiva de memorie (dacă este vizibilă)
-                _memoryManager.HideMemoryStack();
+                if (_memoryManager != null)
+                    _memoryManager.HideMemoryStack();
+            }
+            else if (mode == CalculatorMode.Programmer && _programmerManager != null)
+            {
+                // Inițializăm afișajul programmer cu zero
+                _programmerManager.Reset();
+
+                // Aplicăm setarea de digit grouping pentru modul programmer
+                _programmerManager.SetDigitGrouping(useDigitGrouping);
+
+                // Ascunde stiva de memorie (dacă este vizibilă)
+                if (_memoryManager != null)
+                    _memoryManager.HideMemoryStack();
             }
 
             // Salvează modul curent în setări
             SettingsManager.Instance.LastCalculatorMode = mode.ToString();
+        }
+
+        public void ApplyDigitGroupingWithoutReset(bool useGrouping)
+        {
+            // Aplicăm setarea de digit grouping direct la ambele moduri
+            _standardManager.SetDigitGrouping(useGrouping);
+            _programmerManager.SetDigitGrouping(useGrouping);
         }
 
         /// <summary>
@@ -153,6 +203,14 @@ namespace Calculator
             {
                 SetCalculatorMode(CalculatorMode.Standard);
             }
+        }
+        public void SetDigitGroupingForAllModes(bool useGrouping)
+        {
+            // Setăm gruparea pentru modul standard
+            _standardManager.SetDigitGrouping(useGrouping);
+
+            // Setăm gruparea pentru modul programmer
+            _programmerManager.SetDigitGrouping(useGrouping);
         }
     }
 }
