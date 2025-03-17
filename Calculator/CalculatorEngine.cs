@@ -90,8 +90,8 @@ namespace Calculator
                     Result /= currentValue;
                     break;
                 case "%":
-                    // Tratăm % ca un operator care transformă valoarea curentă în procent
-                    Result = currentValue / 100 * Result;
+                    currentValue = (Result * currentValue) / 100;
+                    Result = currentValue;
                     break;
 
                     // Nu resetăm _pendingOperation aici

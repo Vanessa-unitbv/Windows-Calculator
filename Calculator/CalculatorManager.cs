@@ -435,18 +435,28 @@ namespace Calculator
 
         private void HandlePercentOperation()
         {
-            // Verificăm dacă avem o operație în așteptare neefectuată
+            // Obținem valoarea curentă introdusă
+            double currentValue = ParseCurrentValue();
+
             if (!string.IsNullOrEmpty(_engine.GetPendingOperation()) && !_isNewNumber)
             {
-                // Executăm mai întâi operația în așteptare pentru a obține rezultatul
-                double currentValue = ParseCurrentValue();
-                _engine.Calculate(currentValue);
+                // Cazul când avem o operație în așteptare (ex: 10 + 5%)
+                // Atunci calculăm 5% din 10 = 0.5 și rezultatul va fi 10 + 0.5 = 10.5
 
-                // Acum calculăm procentul din rezultat
-                double result = _engine.Result / 100;
+                // Salvăm operația în așteptare
+                string pendingOp = _engine.GetPendingOperation();
 
-                // Actualizăm string-ul curent
-                _currentNumberString = result.ToString(CultureInfo.InvariantCulture);
+                // Obținem valoarea stocată anterior (_engine.Result conține primul operand)
+                double leftOperand = _engine.Result;
+
+                // Calculăm procentul din primul număr
+                double percentValue = (leftOperand * currentValue) / 100;
+
+                // Setăm valoarea curentă ca fiind procentul calculat
+                _engine.Calculate(percentValue);
+
+                // Actualizăm string-ul curent cu rezultatul
+                _currentNumberString = _engine.Result.ToString(CultureInfo.InvariantCulture);
                 _hasDecimal = _currentNumberString.Contains(".");
 
                 // Înlocuim punctul cu separatorul zecimal specific culturii
@@ -457,34 +467,22 @@ namespace Calculator
 
                 // Afișăm rezultatul
                 UpdateDisplay();
-
-                // Setăm valoarea în motor
-                _engine.SetValue(result);
 
                 // Resetăm operația în așteptare
                 _engine.SetPendingOperation("");
             }
             else
             {
-                // Comportamentul normal pentru % când nu avem operație în așteptare
-                double currentValue = ParseCurrentValue();
-                double result = currentValue / 100;
+                // Cazul când % este aplicat direct pe un număr fără operație anterioară
+                // Conform cerințelor, rezultatul trebuie să fie 0
+                _currentNumberString = "0";
+                _hasDecimal = false;
 
-                // Actualizăm string-ul curent
-                _currentNumberString = result.ToString(CultureInfo.InvariantCulture);
-                _hasDecimal = _currentNumberString.Contains(".");
-
-                // Înlocuim punctul cu separatorul zecimal specific culturii
-                if (_hasDecimal)
-                {
-                    _currentNumberString = _currentNumberString.Replace(".", _currentCulture.NumberFormat.NumberDecimalSeparator);
-                }
-
-                // Afișăm rezultatul
+                // Afișăm rezultatul 0
                 UpdateDisplay();
 
-                // Setăm valoarea în motor
-                _engine.SetValue(result);
+                // Resetăm motorul pentru a începe cu valoarea 0
+                _engine.SetValue(0);
             }
 
             _isNewNumber = true;
