@@ -87,6 +87,8 @@ namespace Calculator
             return Result;
         }
 
+
+        //Operatii cu memoria
         public void MemoryClear()
         {
             _memoryValue = 0;

@@ -14,12 +14,16 @@ namespace Calculator
         private readonly Grid _programmerCalculatorGrid;
         private readonly MenuItem _standardModeMenuItem;
         private readonly MenuItem _programmerModeMenuItem;
+        private CalculatorMode _currentMode = CalculatorMode.Standard;
         public enum CalculatorMode
         {
             Standard,
             Programmer
         }
-        private CalculatorMode _currentMode = CalculatorMode.Standard;
+        public CalculatorMode CurrentMode
+        {
+            get { return _currentMode; }
+        }
         public CalculatorModeManager(MainWindow mainWindow, CalculatorManager standardManager,
                                      ProgrammerCalculatorManager programmerManager, CalculatorMemoryManager memoryManager)
         {
@@ -99,10 +103,6 @@ namespace Calculator
         {
             _standardManager.SetDigitGrouping(useGrouping);
             _programmerManager.SetDigitGrouping(useGrouping);
-        }
-        public CalculatorMode CurrentMode
-        {
-            get { return _currentMode; }
         }
         public void LoadSettings()
         {

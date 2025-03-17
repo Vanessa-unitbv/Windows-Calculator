@@ -69,18 +69,7 @@ namespace Calculator
             _programmerCalculatorManager.SetDigitGrouping(useDigitGrouping);
             _modeManager.LoadSettings();
         }
-        private void MemoryShow_Click(object sender, RoutedEventArgs e)
-        {
-            _memoryManager.ToggleMemoryStack();
-        }
-        private void MemoryListBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
-        {
-            if (MemoryListBox.SelectedItem != null)
-            {
-                double selectedValue = _memoryManager.GetSelectedMemoryValue();
-                _calculatorManager.SetDisplayValue(selectedValue);
-            }
-        }
+        
         private void AttachMenuEvents()
         {
             if (FindMenuItem("Cut") is MenuItem cutMenuItem)
@@ -132,6 +121,18 @@ namespace Calculator
         private void PasteMenuItem_Click(object sender, RoutedEventArgs e)
         {
             _clipboardManager.Paste();
+        }
+        private void MemoryShow_Click(object sender, RoutedEventArgs e)
+        {
+            _memoryManager.ToggleMemoryStack();
+        }
+        private void MemoryListBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (MemoryListBox.SelectedItem != null)
+            {
+                double selectedValue = _memoryManager.GetSelectedMemoryValue();
+                _calculatorManager.SetDisplayValue(selectedValue);
+            }
         }
         private void DigitGroupingMenuItem_Click(object sender, RoutedEventArgs e)
         {

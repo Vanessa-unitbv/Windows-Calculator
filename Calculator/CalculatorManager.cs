@@ -37,7 +37,6 @@ namespace Calculator
                 }
             }
         }
-
         private void AttachButtonEvents(DependencyObject parent)
         {
             int count = VisualTreeHelper.GetChildrenCount(parent);
@@ -123,6 +122,7 @@ namespace Calculator
             }
         }
 
+        //Taste si butoane
         public void HandleKeyPress(KeyEventArgs e)
         {
             try
@@ -242,6 +242,8 @@ namespace Calculator
                 e.Handled = true;
             }
         }
+
+        //Operatii
         private void HandleDigitInput(string digit)
         {
             if (_isNewNumber || _currentNumberString == "0")
@@ -325,7 +327,6 @@ namespace Calculator
             }
             UpdateDisplay();
         }
-
         private void HandlePercentOperation()
         {
             double currentValue = ParseCurrentValue();
@@ -388,7 +389,6 @@ namespace Calculator
             _isNewNumber = true;
             UpdateDisplay();
         }
-
         private void PerformCalculation()
         {
             double currentValue = ParseCurrentValue();
@@ -410,19 +410,6 @@ namespace Calculator
             {
                 MessageBox.Show(ex.Message, "Eroare", MessageBoxButton.OK, MessageBoxImage.Error);
             }
-        }
-        private double ParseCurrentValue()
-        {
-            if (double.TryParse(_currentNumberString,
-                              NumberStyles.Any,
-                              _currentCulture,
-                              out double result))
-            {
-                return result;
-            }
-
-            MessageBox.Show("Format invalid de număr!", "Eroare", MessageBoxButton.OK, MessageBoxImage.Error);
-            return 0;
         }
         private void UpdateDisplay()
         {
@@ -453,6 +440,13 @@ namespace Calculator
                 ResultTextBox.Text = _currentNumberString;
             }
         }
+
+        //Digit grouping
+        public void SetDigitGrouping(bool useGrouping)
+        {
+            _useDigitGrouping = useGrouping;
+            UpdateDisplay();
+        }
         private string FormatNumberWithGrouping(string number)
         {
             bool isNegative = number.StartsWith("-");
@@ -481,6 +475,21 @@ namespace Calculator
 
             return isNegative ? "-" + result : result;
         }
+
+        private double ParseCurrentValue()
+        {
+            if (double.TryParse(_currentNumberString,
+                              NumberStyles.Any,
+                              _currentCulture,
+                              out double result))
+            {
+                return result;
+            }
+
+            MessageBox.Show("Format invalid de număr!", "Eroare", MessageBoxButton.OK, MessageBoxImage.Error);
+            return 0;
+        }
+
         public void SetDisplayValue(double value)
         {
             _currentNumberString = value.ToString(CultureInfo.InvariantCulture);
@@ -524,11 +533,8 @@ namespace Calculator
 
             return false;
         }
-        public void SetDigitGrouping(bool useGrouping)
-        {
-            _useDigitGrouping = useGrouping;
-            UpdateDisplay();
-        }
+
+        //Click events
         private void Number_Click(object sender, RoutedEventArgs e)
         {
             Button button = (Button)sender;
@@ -633,6 +639,8 @@ namespace Calculator
         {
             HandlePlusMinus();
         }
+
+        //Memory click
         private void MemoryClear_Click(object sender, RoutedEventArgs e)
         {
             _memoryManager.MemoryClear();
@@ -654,6 +662,8 @@ namespace Calculator
         {
             _memoryManager.MemorySubtract(ParseCurrentValue());
         }
+
+        //About
         public void ShowAboutInfo()
         {
             MessageBox.Show(

@@ -273,44 +273,6 @@ namespace Calculator
                 default: return 10;
             }
         }
-        private void Operator_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is Button button)
-            {
-                string operation = button.Content.ToString();
-                if (!string.IsNullOrEmpty(_pendingOperation) && !_isNewNumber)
-                {
-                    PerformCalculation();
-                }
-                _leftOperand = _currentValue;
-                _pendingOperation = operation;
-                _isNewNumber = true;
-            }
-        }
-        private void Clear_Click(object sender, RoutedEventArgs e)
-        {
-            _currentValue = 0;
-            _leftOperand = 0;
-            _pendingOperation = "";
-            _isNewNumber = true;
-
-            UpdateAllDisplays(0);
-        }
-        private void ClearEntry_Click(object sender, RoutedEventArgs e)
-        {
-            _currentValue = 0;
-            _isNewNumber = true;
-
-            UpdateAllDisplays(0);
-        }
-        private void Backspace_Click(object sender, RoutedEventArgs e)
-        {
-            if (_isNewNumber)
-                return;
-            int baseValue = GetBaseForNumberSystem(_currentNumberSystem);
-            _currentValue = _currentValue / baseValue;
-            UpdateAllDisplays(_currentValue);
-        }
         public void UpdateButtonsState()
         {
             SetButtonEnabled(_buttonHexA, true);
@@ -667,6 +629,43 @@ namespace Calculator
         { 
             PerformCalculation();
         }
+        private void Operator_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button)
+            {
+                string operation = button.Content.ToString();
+                if (!string.IsNullOrEmpty(_pendingOperation) && !_isNewNumber)
+                {
+                    PerformCalculation();
+                }
+                _leftOperand = _currentValue;
+                _pendingOperation = operation;
+                _isNewNumber = true;
+            }
+        }
+        private void Clear_Click(object sender, RoutedEventArgs e)
+        {
+            _currentValue = 0;
+            _leftOperand = 0;
+            _pendingOperation = "";
+            _isNewNumber = true;
 
+            UpdateAllDisplays(0);
+        }
+        private void ClearEntry_Click(object sender, RoutedEventArgs e)
+        {
+            _currentValue = 0;
+            _isNewNumber = true;
+
+            UpdateAllDisplays(0);
+        }
+        private void Backspace_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isNewNumber)
+                return;
+            int baseValue = GetBaseForNumberSystem(_currentNumberSystem);
+            _currentValue = _currentValue / baseValue;
+            UpdateAllDisplays(_currentValue);
+        }
     }
 }
