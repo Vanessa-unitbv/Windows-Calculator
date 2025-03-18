@@ -19,6 +19,12 @@ namespace Calculator
         private string _currentNumberString = "0";
         private bool _hasDecimal = false;
         private readonly CultureInfo _currentCulture;
+
+        private bool _useOrderOfOperations = false;
+        private string _lastOperator = "";
+        private double _lastValue = 0;
+        private bool _expressionStarted = false;
+
         public CalculatorManager(MainWindow mainWindow, CalculatorMemoryManager memoryManager)
         {
             _mainWindow = mainWindow;
@@ -121,8 +127,6 @@ namespace Calculator
                 }
             }
         }
-
-        //Taste si butoane
         public void HandleKeyPress(KeyEventArgs e)
         {
             try
@@ -283,28 +287,81 @@ namespace Calculator
             }
             UpdateDisplay();
         }
+
         private void HandleOperation(string operation)
         {
             double currentValue = ParseCurrentValue();
-            if (!string.IsNullOrEmpty(_engine.GetPendingOperation()) && !_isNewNumber)
+
+            if (_useOrderOfOperations)
             {
-                _engine.Calculate(currentValue);
-                _currentNumberString = _engine.Result.ToString(CultureInfo.InvariantCulture);
-                _hasDecimal = _currentNumberString.Contains(".");
-                if (_hasDecimal)
+                if (operation == "=")
                 {
-                    _currentNumberString = _currentNumberString.Replace(".", _currentCulture.NumberFormat.NumberDecimalSeparator);
+                    if (_expressionStarted)
+                    {
+                        _engine.AddToExpression(currentValue, "");
+                        try
+                        {
+                            double result = _engine.EvaluateExpression();
+                            _currentNumberString = result.ToString(CultureInfo.InvariantCulture);
+                            _hasDecimal = _currentNumberString.Contains(".");
+                            if (_hasDecimal)
+                            {
+                                _currentNumberString = _currentNumberString.Replace(".", _currentCulture.NumberFormat.NumberDecimalSeparator);
+                            }
+                            UpdateDisplay();
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show(ex.Message, "Eroare", MessageBoxButton.OK, MessageBoxImage.Error);
+                            ClearAll();
+                            return;
+                        }
+
+                        _expressionStarted = false;
+                    }
                 }
-                UpdateDisplay();
+                else
+                {
+                    if (!_expressionStarted)
+                    {
+                        _engine.SetValue(currentValue);
+                        _engine.AddToExpression(currentValue, operation);
+                        _expressionStarted = true;
+                    }
+                    else
+                    {
+                        _engine.AddToExpression(currentValue, operation);
+                    }
+                }
+
+                _isNewNumber = true;
+                _isResultDisplayed = (operation == "=");
+                _lastOperator = operation;
             }
             else
             {
-                _engine.SetValue(currentValue);
+                if (!string.IsNullOrEmpty(_engine.GetPendingOperation()) && !_isNewNumber)
+                {
+                    _engine.Calculate(currentValue);
+                    _currentNumberString = _engine.Result.ToString(CultureInfo.InvariantCulture);
+                    _hasDecimal = _currentNumberString.Contains(".");
+                    if (_hasDecimal)
+                    {
+                        _currentNumberString = _currentNumberString.Replace(".", _currentCulture.NumberFormat.NumberDecimalSeparator);
+                    }
+                    UpdateDisplay();
+                }
+                else
+                {
+                    _engine.SetValue(currentValue);
+                }
+
+                _engine.SetPendingOperation(operation);
+                _isNewNumber = true;
+                _isResultDisplayed = false;
             }
-            _engine.SetPendingOperation(operation);
-            _isNewNumber = true;
-            _isResultDisplayed = false;
         }
+
         private void HandleBackspace()
         {
             if (_isResultDisplayed || _isNewNumber)
@@ -379,6 +436,8 @@ namespace Calculator
             _engine.Reset();
             _isNewNumber = true;
             _isResultDisplayed = false;
+            _expressionStarted = false;
+            _lastOperator = "";
 
             UpdateDisplay();
         }
@@ -392,10 +451,22 @@ namespace Calculator
         private void PerformCalculation()
         {
             double currentValue = ParseCurrentValue();
+
             try
             {
-                _engine.Calculate(currentValue);
-                _currentNumberString = _engine.Result.ToString(CultureInfo.InvariantCulture);
+                if (_useOrderOfOperations && _expressionStarted)
+                {
+                    _engine.AddToExpression(currentValue, "");
+                    double result = _engine.EvaluateExpression();
+                    _currentNumberString = result.ToString(CultureInfo.InvariantCulture);
+                    _expressionStarted = false;
+                }
+                else
+                {
+                    _engine.Calculate(currentValue);
+                    _currentNumberString = _engine.Result.ToString(CultureInfo.InvariantCulture);
+                }
+
                 _hasDecimal = _currentNumberString.Contains(".");
                 if (_hasDecimal)
                 {
@@ -409,8 +480,10 @@ namespace Calculator
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "Eroare", MessageBoxButton.OK, MessageBoxImage.Error);
+                ClearAll();
             }
         }
+
         private void UpdateDisplay()
         {
             if (_useDigitGrouping)
@@ -672,6 +745,15 @@ namespace Calculator
                 MessageBoxButton.OK,
                 MessageBoxImage.Information
             );
+        }
+
+        //Order of operations
+        public void SetUseOrderOfOperations(bool useOrderOfOperations)
+        {
+            _useOrderOfOperations = useOrderOfOperations;
+            _engine.SetUseOrderOfOperations(useOrderOfOperations);
+            _expressionStarted = false;
+            _lastOperator = "";
         }
     }
 }

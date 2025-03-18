@@ -98,6 +98,15 @@ namespace Calculator
                 SaveSettings();
             }
         }
+        public bool UseOrderOfOperations
+        {
+            get { return _currentSettings.UseOrderOfOperations; }
+            set
+            {
+                _currentSettings.UseOrderOfOperations = value;
+                SaveSettings();
+            }
+        }
     }
     [Serializable]
     public class CalculatorSettings
@@ -105,11 +114,14 @@ namespace Calculator
         public bool UseDigitGrouping { get; set; }
         public string LastCalculatorMode { get; set; }
         public string LastNumberSystem { get; set; }
+
+        public bool UseOrderOfOperations { get; set; }
         public CalculatorSettings()
         {
             UseDigitGrouping = false;
             LastCalculatorMode = "Standard";
             LastNumberSystem = "HEX";
+            UseOrderOfOperations = false;
         }
     }
 }

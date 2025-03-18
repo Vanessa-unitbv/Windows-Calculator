@@ -11,7 +11,7 @@ namespace Calculator
         private CalculatorMemoryManager _memoryManager;
         private CalculatorModeManager _modeManager;
         private ClipboardManager _clipboardManager;
-      
+
         public MainWindow()
         {
             InitializeComponent();
@@ -61,15 +61,24 @@ namespace Calculator
         private void LoadSettings()
         {
             bool useDigitGrouping = SettingsManager.Instance.UseDigitGrouping;
+            bool useOrderOfOperations = SettingsManager.Instance.UseOrderOfOperations;
+
             if (FindMenuItem("Digit Grouping") is MenuItem digitGroupingMenuItem)
             {
                 digitGroupingMenuItem.IsChecked = useDigitGrouping;
             }
+
+            if (FindMenuItem("Order of Operations") is MenuItem orderOfOperationsMenuItem)
+            {
+                orderOfOperationsMenuItem.IsChecked = useOrderOfOperations;
+            }
+
             _calculatorManager.SetDigitGrouping(useDigitGrouping);
+            _calculatorManager.SetUseOrderOfOperations(useOrderOfOperations);
             _programmerCalculatorManager.SetDigitGrouping(useDigitGrouping);
             _modeManager.LoadSettings();
         }
-        
+
         private void AttachMenuEvents()
         {
             if (FindMenuItem("Cut") is MenuItem cutMenuItem)
@@ -91,6 +100,12 @@ namespace Calculator
             {
                 digitGroupingMenuItem.IsCheckable = true;
                 digitGroupingMenuItem.Click += DigitGroupingMenuItem_Click;
+            }
+
+            if (FindMenuItem("Order of Operations") is MenuItem orderOfOperationsMenuItem)
+            {
+                orderOfOperationsMenuItem.IsCheckable = true;
+                orderOfOperationsMenuItem.Click += OrderOfOperationsMenuItem_Click;
             }
         }
         private MenuItem FindMenuItem(string header)
@@ -159,6 +174,27 @@ namespace Calculator
         }
         private void ProgrammerModeMenuItem_Click(object sender, RoutedEventArgs e)
         {
+        }
+
+        private void OrderOfOperationsMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is MenuItem menuItem)
+            {
+                bool isChecked = menuItem.IsChecked;
+
+                if (_modeManager.CurrentMode == CalculatorModeManager.CalculatorMode.Standard)
+                {
+                    _calculatorManager.SetUseOrderOfOperations(isChecked);
+                }
+                else
+                {
+                    MessageBox.Show("Ordinea operațiilor este disponibilă doar în modul Standard.",
+                                   "Informație", MessageBoxButton.OK, MessageBoxImage.Information);
+                    menuItem.IsChecked = false;
+                }
+
+                SettingsManager.Instance.UseOrderOfOperations = isChecked;
+            }
         }
     }
 }
